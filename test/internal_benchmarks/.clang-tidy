@@ -1,3 +1,3 @@
 InheritParentConfig: true
 Checks: >
-  -misc-const-correctness
+  -clang-analyzer-unix.Malloc

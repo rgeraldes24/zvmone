@@ -36,9 +36,9 @@ inline constexpr int64_t cost_per_input_word(size_t input_size) noexcept
     return BaseCost + WordCost * num_words(input_size);
 }
 
-PrecompileAnalysis ecrecover_analyze(bytes_view /*input*/, evmc_revision /*rev*/) noexcept
+PrecompileAnalysis depositroot_analyze(bytes_view /*input*/, evmc_revision /*rev*/) noexcept
 {
-    return {3000, 32};
+    return {19992, 32};
 }
 
 PrecompileAnalysis sha256_analyze(bytes_view input, evmc_revision /*rev*/) noexcept
@@ -46,45 +46,35 @@ PrecompileAnalysis sha256_analyze(bytes_view input, evmc_revision /*rev*/) noexc
     return {cost_per_input_word<60, 12>(input.size()), 32};
 }
 
-PrecompileAnalysis ripemd160_analyze(bytes_view input, evmc_revision /*rev*/) noexcept
-{
-    return {cost_per_input_word<600, 120>(input.size()), 32};
-}
-
 PrecompileAnalysis identity_analyze(bytes_view input, evmc_revision /*rev*/) noexcept
 {
     return {cost_per_input_word<15, 3>(input.size()), input.size()};
 }
 
-PrecompileAnalysis ecadd_analyze(bytes_view /*input*/, evmc_revision rev) noexcept
+PrecompileAnalysis ecadd_analyze(bytes_view /*input*/, evmc_revision /*rev*/) noexcept
 {
-    return {rev >= EVMC_ISTANBUL ? 150 : 500, 64};
+    return {150, 64};
 }
 
-PrecompileAnalysis ecmul_analyze(bytes_view /*input*/, evmc_revision rev) noexcept
+PrecompileAnalysis ecmul_analyze(bytes_view /*input*/, evmc_revision /*rev*/) noexcept
 {
-    return {rev >= EVMC_ISTANBUL ? 6000 : 40000, 64};
+    return {6000, 64};
 }
 
-PrecompileAnalysis ecpairing_analyze(bytes_view input, evmc_revision rev) noexcept
+PrecompileAnalysis ecpairing_analyze(bytes_view input, evmc_revision /*rev*/) noexcept
 {
-    const auto base_cost = (rev >= EVMC_ISTANBUL) ? 45000 : 100000;
-    const auto element_cost = (rev >= EVMC_ISTANBUL) ? 34000 : 80000;
+    const auto base_cost = 45000;
+    const auto element_cost = 34000;
     const auto num_elements = static_cast<int64_t>(input.size() / 192);
     return {base_cost + num_elements * element_cost, 32};
 }
 
-PrecompileAnalysis blake2bf_analyze(bytes_view input, evmc_revision) noexcept
-{
-    return {input.size() == 213 ? intx::be::unsafe::load<uint32_t>(input.data()) : GasCostMax, 64};
-}
-
-PrecompileAnalysis expmod_analyze(bytes_view input, evmc_revision rev) noexcept
+PrecompileAnalysis expmod_analyze(bytes_view input, evmc_revision /*rev*/) noexcept
 {
     using namespace intx;
 
     static constexpr size_t input_header_required_size = 3 * sizeof(uint256);
-    const int64_t min_gas = (rev >= EVMC_BERLIN) ? 200 : 0;
+    const int64_t min_gas = 200;
 
     uint8_t input_header[input_header_required_size]{};
     std::copy_n(input.data(), std::min(input.size(), input_header_required_size), input_header);
@@ -121,19 +111,11 @@ PrecompileAnalysis expmod_analyze(bytes_view input, evmc_revision rev) noexcept
         const auto w = (x + 7) >> 3;
         return w * w;
     };
-    static constexpr auto mult_complexity_eip198 = [](const uint256& x) noexcept {
-        const auto x2 = x * x;
-        return (x <= 64)   ? x2 :
-               (x <= 1024) ? (x2 >> 2) + 96 * x - 3072 :
-                             (x2 >> 4) + 480 * x - 199680;
-    };
 
     const auto max_len = std::max(mod_len, base_len);
     const auto adjusted_exp_len = adjusted_len(
         sizeof(input_header) + static_cast<size_t>(base_len), static_cast<size_t>(exp_len));
-    const auto gas = (rev >= EVMC_BERLIN) ?
-                         mult_complexity_eip2565(max_len) * adjusted_exp_len / 3 :
-                         mult_complexity_eip198(max_len) * adjusted_exp_len / 20;
+    const auto gas = mult_complexity_eip2565(max_len) * adjusted_exp_len / 3;
     return {std::max(min_gas, static_cast<int64_t>(std::min(gas, intx::uint256{GasCostMax}))),
         static_cast<size_t>(mod_len)};
 }
@@ -162,15 +144,13 @@ ExecutionResult dummy_execute(const uint8_t*, size_t, uint8_t*, size_t) noexcept
 inline constexpr auto traits = []() noexcept {
     std::array<PrecompileTraits, NumPrecompiles> tbl{{
         {},  // undefined for 0
-        {ecrecover_analyze, dummy_execute<PrecompileId::ecrecover>},
+        {depositroot_analyze, dummy_execute<PrecompileId::depositroot>},
         {sha256_analyze, dummy_execute<PrecompileId::sha256>},
-        {ripemd160_analyze, dummy_execute<PrecompileId::ripemd160>},
         {identity_analyze, identity_execute},
         {expmod_analyze, dummy_execute<PrecompileId::expmod>},
         {ecadd_analyze, dummy_execute<PrecompileId::ecadd>},
         {ecmul_analyze, dummy_execute<PrecompileId::ecmul>},
         {ecpairing_analyze, dummy_execute<PrecompileId::ecpairing>},
-        {blake2bf_analyze, dummy_execute<PrecompileId::blake2bf>},
     }};
     return tbl;
 }();
@@ -186,11 +166,6 @@ std::optional<evmc::Result> call_precompile(evmc_revision rev, const evmc_messag
         return {};
 
     const auto id = msg.code_address.bytes[19];
-    if (rev < EVMC_BYZANTIUM && id > 4)
-        return {};
-
-    if (rev < EVMC_ISTANBUL && id > 8)
-        return {};
 
     assert(id > 0);
     assert(msg.gas >= 0);

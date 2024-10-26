@@ -95,12 +95,10 @@ struct Transaction
 {
     enum class Kind : uint8_t
     {
-        legacy = 0,
-        eip2930 = 1,  ///< Transaction with access list https://eips.ethereum.org/EIPS/eip-2930
-        eip1559 = 2   ///< EIP1559 transaction https://eips.ethereum.org/EIPS/eip-1559
+        eip1559 = 2  ///< EIP1559 transaction https://eips.ethereum.org/EIPS/eip-1559
     };
 
-    Kind kind = Kind::legacy;
+    Kind kind = Kind::eip1559;
     bytes data;
     int64_t gas_limit;
     intx::uint256 max_gas_price;
@@ -111,9 +109,8 @@ struct Transaction
     AccessList access_list;
     uint64_t chain_id = 0;
     uint64_t nonce = 0;
-    intx::uint256 r;
-    intx::uint256 s;
-    uint8_t v = 0;
+    bytes public_key;
+    bytes signature;
 };
 
 struct Log
@@ -125,7 +122,7 @@ struct Log
 
 struct TransactionReceipt
 {
-    Transaction::Kind kind = Transaction::Kind::legacy;
+    Transaction::Kind kind = Transaction::Kind::eip1559;
     evmc_status_code status = EVMC_INTERNAL_ERROR;
     int64_t gas_used = 0;
     std::vector<Log> logs;
@@ -134,10 +131,8 @@ struct TransactionReceipt
 
 /// Finalize state after applying a "block" of transactions.
 ///
-/// Applies block reward to coinbase, withdrawals (post Shanghai) and deletes empty touched accounts
-/// (post Spurious Dragon).
-void finalize(State& state, evmc_revision rev, const address& coinbase,
-    std::optional<uint64_t> block_reward, std::span<Withdrawal> withdrawals);
+/// Applies withdrawals and deletes empty touched accounts.
+void finalize(State& state, evmc_revision rev, std::span<Withdrawal> withdrawals);
 
 [[nodiscard]] std::variant<TransactionReceipt, std::error_code> transition(
     State& state, const BlockInfo& block, const Transaction& tx, evmc_revision rev, evmc::VM& vm);

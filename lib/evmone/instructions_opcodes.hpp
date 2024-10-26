@@ -82,9 +82,6 @@ enum Opcode : uint8_t
     OP_MSIZE = 0x59,
     OP_GAS = 0x5a,
     OP_JUMPDEST = 0x5b,
-    OP_RJUMP = 0x5c,
-    OP_RJUMPI = 0x5d,
-    OP_RJUMPV = 0x5e,
 
     OP_PUSH0 = 0x5f,
     OP_PUSH1 = 0x60,
@@ -157,15 +154,8 @@ enum Opcode : uint8_t
     OP_LOG3 = 0xa3,
     OP_LOG4 = 0xa4,
 
-    OP_CALLF = 0xb0,
-    OP_RETF = 0xb1,
-
-    OP_DUPN = 0xb5,
-    OP_SWAPN = 0xb6,
-
     OP_CREATE = 0xf0,
     OP_CALL = 0xf1,
-    OP_CALLCODE = 0xf2,
     OP_RETURN = 0xf3,
     OP_DELEGATECALL = 0xf4,
     OP_CREATE2 = 0xf5,
@@ -173,7 +163,6 @@ enum Opcode : uint8_t
     OP_STATICCALL = 0xfa,
 
     OP_REVERT = 0xfd,
-    OP_INVALID = 0xfe,
-    OP_SELFDESTRUCT = 0xff
+    OP_INVALID = 0xfe
 };
 }  // namespace evmone

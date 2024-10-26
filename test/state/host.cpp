@@ -5,14 +5,13 @@
 #include "host.hpp"
 #include "precompiles.hpp"
 #include "rlp.hpp"
-#include <evmone/eof.hpp>
 
 namespace evmone::state
 {
 bool Host::account_exists(const address& addr) const noexcept
 {
     const auto* const acc = m_state.find(addr);
-    return acc != nullptr && (m_rev < EVMC_SPURIOUS_DRAGON || !acc->is_empty());
+    return acc != nullptr && (!acc->is_empty());
 }
 
 bytes32 Host::get_storage(const address& addr, const bytes32& key) const noexcept
@@ -98,19 +97,6 @@ size_t Host::copy_code(const address& addr, size_t code_offset, uint8_t* buffer_
     return num_bytes;
 }
 
-bool Host::selfdestruct(const address& addr, const address& beneficiary) noexcept
-{
-    // Touch beneficiary and transfer all balance to it.
-    // This may happen multiple times per single account as account's balance
-    // can be increased with a call following previous selfdestruct.
-    auto& acc = m_state.get(addr);
-    m_state.touch(beneficiary).balance += acc.balance;
-    acc.balance = 0;  // Zero balance (this can be the beneficiary).
-
-    // Mark the destruction if not done already.
-    return !std::exchange(acc.destructed, true);
-}
-
 address compute_new_account_address(const address& sender, uint64_t sender_nonce,
     const std::optional<bytes32>& salt, bytes_view init_code) noexcept
 {
@@ -180,8 +166,7 @@ evmc::Result Host::create(const evmc_message& msg) noexcept
 
     auto& new_acc = m_state.get_or_insert(msg.recipient);
     assert(new_acc.nonce == 0);
-    if (m_rev >= EVMC_SPURIOUS_DRAGON)
-        new_acc.nonce = 1;
+    new_acc.nonce = 1;
 
     // Clear the new account storage, but keep the access status (from tx access list).
     // This is only needed for tests and cannot happen in real networks.
@@ -199,12 +184,6 @@ evmc::Result Host::create(const evmc_message& msg) noexcept
     create_msg.input_data = nullptr;
     create_msg.input_size = 0;
 
-    if (m_rev >= EVMC_CANCUN && (is_eof_container(initcode) || is_eof_container(sender_acc.code)))
-    {
-        if (validate_eof(m_rev, initcode) != EOFValidationError::success)
-            return evmc::Result{EVMC_CONTRACT_VALIDATION_FAILURE};
-    }
-
     auto result = m_vm.execute(*this, m_rev, create_msg, msg.input_data, msg.input_size);
     if (result.status_code != EVMC_SUCCESS)
     {
@@ -216,24 +195,16 @@ evmc::Result Host::create(const evmc_message& msg) noexcept
     assert(gas_left >= 0);
 
     const bytes_view code{result.output_data, result.output_size};
-    if (m_rev >= EVMC_SPURIOUS_DRAGON && code.size() > max_code_size)
+    if (code.size() > max_code_size)
         return evmc::Result{EVMC_FAILURE};
 
     // Code deployment cost.
     const auto cost = std::ssize(code) * 200;
     gas_left -= cost;
     if (gas_left < 0)
-    {
-        return (m_rev == EVMC_FRONTIER) ? evmc::Result{EVMC_SUCCESS, result.gas_left} :
-                                          evmc::Result{EVMC_FAILURE};
-    }
+        return evmc::Result{EVMC_FAILURE};
 
-    if (m_rev >= EVMC_CANCUN && (is_eof_container(initcode) || is_eof_container(code)))
-    {
-        if (validate_eof(m_rev, code) != EOFValidationError::success)
-            return evmc::Result{EVMC_CONTRACT_VALIDATION_FAILURE};
-    }
-    else if (m_rev >= EVMC_LONDON && !code.empty() && code[0] == 0xEF)  // Reject EF code.
+    if (!code.empty() && code[0] == 0xEF)  // Reject EF code.
         return evmc::Result{EVMC_CONTRACT_VALIDATION_FAILURE};
 
     // TODO: The new_acc pointer is invalid because of the state revert implementation,
@@ -291,7 +262,7 @@ evmc::Result Host::call(const evmc_message& orig_msg) noexcept
         m_logs.resize(logs_snapshot);
 
         // The 0x03 quirk: the touch on this address is never reverted.
-        if (is_03_touched && m_rev >= EVMC_SPURIOUS_DRAGON)
+        if (is_03_touched)
             m_state.touch(addr_03);
     }
     return result;
@@ -334,9 +305,6 @@ void Host::emit_log(const address& addr, const uint8_t* data, size_t data_size,
 
 evmc_access_status Host::access_account(const address& addr) noexcept
 {
-    if (m_rev < EVMC_BERLIN)
-        return EVMC_ACCESS_COLD;  // Ignore before Berlin.
-
     auto& acc = m_state.get_or_insert(addr, {.erasable = true});
     const auto status = std::exchange(acc.access_status, EVMC_ACCESS_WARM);
 

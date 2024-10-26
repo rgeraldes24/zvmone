@@ -77,19 +77,21 @@ TEST(statetest_loader, load_minimal_test)
             "_info": {},
             "pre": {},
             "transaction": {
-                "gasPrice": "",
                 "sender": "",
                 "to": "",
                 "data": null,
                 "gasLimit": "0",
-                "value": null
+                "value": null,
+                "maxFeePerGas": "",
+                "maxPriorityFeePerGas": ""
             },
             "post": {},
             "env": {
                 "currentNumber": "0",
                 "currentTimestamp": "0",
                 "currentGasLimit": "0",
-                "currentCoinbase": ""
+                "currentCoinbase": "",
+                "currentRandom": ""
             }
         }
     })"};
@@ -102,7 +104,7 @@ TEST(statetest_loader, load_minimal_test)
     EXPECT_EQ(st.block.coinbase, address{});
     EXPECT_EQ(st.block.prev_randao, bytes32{});
     EXPECT_EQ(st.block.base_fee, 0);
-    EXPECT_EQ(st.multi_tx.kind, test::TestMultiTransaction::Kind::legacy);
+    EXPECT_EQ(st.multi_tx.kind, test::TestMultiTransaction::Kind::eip1559);
     EXPECT_EQ(st.multi_tx.data, bytes{});
     EXPECT_EQ(st.multi_tx.gas_limit, 0);
     EXPECT_EQ(st.multi_tx.max_gas_price, 0);
@@ -113,9 +115,8 @@ TEST(statetest_loader, load_minimal_test)
     EXPECT_EQ(st.multi_tx.access_list.size(), 0);
     EXPECT_EQ(st.multi_tx.chain_id, 0);
     EXPECT_EQ(st.multi_tx.nonce, 0);
-    EXPECT_EQ(st.multi_tx.r, 0);
-    EXPECT_EQ(st.multi_tx.s, 0);
-    EXPECT_EQ(st.multi_tx.v, 0);
+    EXPECT_EQ(st.multi_tx.public_key, bytes{});
+    EXPECT_EQ(st.multi_tx.signature, bytes{});
     EXPECT_EQ(st.multi_tx.access_lists.size(), 0);
     EXPECT_EQ(st.multi_tx.inputs.size(), 0);
     EXPECT_EQ(st.multi_tx.gas_limits.size(), 1);
@@ -123,25 +124,4 @@ TEST(statetest_loader, load_minimal_test)
     EXPECT_EQ(st.multi_tx.values.size(), 0);
     EXPECT_EQ(st.cases.size(), 0);
     EXPECT_EQ(st.input_labels.size(), 0);
-}
-
-TEST(statetest_loader, validate_deployed_code_test)
-{
-    {
-        state::State state;
-        state.insert(0xadd4_address, {.code = "EF0001010000020001000103000100FEDA"_hex});
-        EXPECT_THAT([&] { validate_deployed_code(state, EVMC_CANCUN); },
-            ThrowsMessage<std::invalid_argument>(
-                "EOF container at 0x000000000000000000000000000000000000add4 is invalid: "
-                "zero_section_size"));
-    }
-
-    {
-        state::State state;
-        state.insert(0xadd4_address, {.code = "EF00"_hex});
-        EXPECT_THAT([&] { validate_deployed_code(state, EVMC_SHANGHAI); },
-            ThrowsMessage<std::invalid_argument>(
-                "code at 0x000000000000000000000000000000000000add4 "
-                "starts with 0xEF00 in Shanghai"));
-    }
 }

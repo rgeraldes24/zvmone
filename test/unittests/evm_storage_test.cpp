@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /// This file contains EVM unit tests that access or modify the contract storage.
+// TODO(now.youtrack.cloud/issue/TE-13)
 
 #include "evm_fixture.hpp"
 #include <array>
@@ -14,25 +15,25 @@ TEST_P(evm, storage)
 {
     const auto code = sstore(0xee, 0xff) + sload(0xee) + mstore8(0) + ret(0, 1);
     execute(100000, code);
-    EXPECT_GAS_USED(EVMC_SUCCESS, 20224);
+    EXPECT_GAS_USED(EVMC_SUCCESS, 22224);
     EXPECT_EQ(bytes_view(result.output_data, result.output_size), bytes{0xff});
 }
 
 TEST_P(evm, sstore_pop_stack)
 {
     execute(100000, sstore(1, dup1(0)) + mstore8(0) + ret(0, 1));
-    EXPECT_GAS_USED(EVMC_SUCCESS, 5024);
+    EXPECT_GAS_USED(EVMC_SUCCESS, 2224);
     EXPECT_EQ(bytes_view(result.output_data, result.output_size), bytes{0x00});
     EXPECT_EQ(
         host.accounts[msg.recipient].storage.find(0x01_bytes32)->second.current, 0x00_bytes32);
 }
 
-TEST_P(evm, sload_cost_pre_tangerine_whistle)
+TEST_P(evm, sload_cost)
 {
-    rev = EVMC_HOMESTEAD;
-    execute(56, sload(dup1(0)));
-    EXPECT_GAS_USED(EVMC_SUCCESS, 56);
-    EXPECT_EQ(host.accounts[msg.recipient].storage.size(), 0);
+    rev = EVMC_SHANGHAI;
+    execute(2106, sload(dup1(0)));
+    EXPECT_GAS_USED(EVMC_SUCCESS, 2106);
+    EXPECT_EQ(host.accounts[msg.recipient].storage.size(), 1);
 }
 
 TEST_P(evm, sstore_out_of_block_gas)
@@ -41,22 +42,22 @@ TEST_P(evm, sstore_out_of_block_gas)
 
     // Barely enough gas to execute successfully.
     host.accounts[msg.recipient] = {};  // Reset contract account.
-    execute(20011, code);
-    EXPECT_GAS_USED(EVMC_SUCCESS, 20011);
+    execute(22111, code);
+    EXPECT_GAS_USED(EVMC_SUCCESS, 22111);
 
     // Out of block gas - 1 too low.
     host.accounts[msg.recipient] = {};  // Reset contract account.
-    execute(20010, code);
+    execute(22110, code);
     EXPECT_STATUS(EVMC_OUT_OF_GAS);
 
     // Out of block gas - 2 too low.
     host.accounts[msg.recipient] = {};  // Reset contract account.
-    execute(20009, code);
+    execute(22109, code);
     EXPECT_STATUS(EVMC_OUT_OF_GAS);
 
     // SSTORE instructions out of gas.
     host.accounts[msg.recipient] = {};  // Reset contract account.
-    execute(20008, code);
+    execute(22108, code);
     EXPECT_STATUS(EVMC_OUT_OF_GAS);
 }
 
@@ -66,16 +67,16 @@ TEST_P(evm, sstore_cost)
 
     constexpr auto v1 = 0x01_bytes32;
 
-    for (auto r : {EVMC_BYZANTIUM, EVMC_CONSTANTINOPLE, EVMC_PETERSBURG, EVMC_ISTANBUL})
+    for (auto r : {EVMC_SHANGHAI})
     {
         rev = r;
 
         // Added:
         storage.clear();
-        execute(20006, sstore(1, 1));
+        execute(22106, sstore(1, 1));
         EXPECT_EQ(result.status_code, EVMC_SUCCESS);
         storage.clear();
-        execute(20005, sstore(1, 1));
+        execute(22105, sstore(1, 1));
         EXPECT_EQ(result.status_code, EVMC_OUT_OF_GAS);
 
         // Deleted:
@@ -101,12 +102,7 @@ TEST_P(evm, sstore_cost)
         storage[v1] = v1;
         execute(sstore(1, 1));
         EXPECT_EQ(result.status_code, EVMC_SUCCESS);
-        if (rev >= EVMC_ISTANBUL)
-            EXPECT_EQ(gas_used, 806);
-        else if (rev == EVMC_CONSTANTINOPLE)
-            EXPECT_EQ(gas_used, 206);
-        else
-            EXPECT_EQ(gas_used, 5006);
+        EXPECT_EQ(gas_used, 2206);
         execute(205, sstore(1, 1));
         EXPECT_EQ(result.status_code, EVMC_OUT_OF_GAS);
 
@@ -114,110 +110,34 @@ TEST_P(evm, sstore_cost)
         storage.clear();
         execute(sstore(1, 1) + sstore(1, 1));
         EXPECT_EQ(result.status_code, EVMC_SUCCESS);
-        if (rev >= EVMC_ISTANBUL)
-            EXPECT_EQ(gas_used, 20812);
-        else if (rev == EVMC_CONSTANTINOPLE)
-            EXPECT_EQ(gas_used, 20212);
-        else
-            EXPECT_EQ(gas_used, 25012);
+        EXPECT_EQ(gas_used, 22212);
 
         // Modified again:
         storage.clear();
         storage[v1] = {v1, 0x00_bytes32};
         execute(sstore(1, 2));
         EXPECT_EQ(result.status_code, EVMC_SUCCESS);
-        if (rev >= EVMC_ISTANBUL)
-            EXPECT_EQ(gas_used, 806);
-        else if (rev == EVMC_CONSTANTINOPLE)
-            EXPECT_EQ(gas_used, 206);
-        else
-            EXPECT_EQ(gas_used, 5006);
+        EXPECT_EQ(gas_used, 2206);
 
         // Added & modified again:
         storage.clear();
         execute(sstore(1, 1) + sstore(1, 2));
         EXPECT_EQ(result.status_code, EVMC_SUCCESS);
-        if (rev >= EVMC_ISTANBUL)
-            EXPECT_EQ(gas_used, 20812);
-        else if (rev == EVMC_CONSTANTINOPLE)
-            EXPECT_EQ(gas_used, 20212);
-        else
-            EXPECT_EQ(gas_used, 25012);
+        EXPECT_EQ(gas_used, 22212);
 
         // Modified & modified again:
         storage.clear();
         storage[v1] = v1;
         execute(sstore(1, 2) + sstore(1, 3));
         EXPECT_EQ(result.status_code, EVMC_SUCCESS);
-        if (rev >= EVMC_ISTANBUL)
-            EXPECT_EQ(gas_used, 5812);
-        else if (rev == EVMC_CONSTANTINOPLE)
-            EXPECT_EQ(gas_used, 5212);
-        else
-            EXPECT_EQ(gas_used, 10012);
+        EXPECT_EQ(gas_used, 5112);
 
         // Modified & modified again back to original:
         storage.clear();
         storage[v1] = v1;
         execute(sstore(1, 2) + sstore(1, 1));
         EXPECT_EQ(result.status_code, EVMC_SUCCESS);
-        if (rev >= EVMC_ISTANBUL)
-            EXPECT_EQ(gas_used, 5812);
-        else if (rev == EVMC_CONSTANTINOPLE)
-            EXPECT_EQ(gas_used, 5212);
-        else
-            EXPECT_EQ(gas_used, 10012);
-    }
-}
-
-TEST_P(evm, sstore_cost_legacy)
-{
-    static constexpr auto O = 0x000000000000000000_bytes32;
-    static constexpr auto X = 0xfeffffffffffffffff_bytes32;
-    static constexpr auto Y = 0x011000000000000002_bytes32;
-    static constexpr auto Z = 0x800000000000000001_bytes32;
-    static constexpr auto key = 0xef_bytes32;
-
-    static constexpr int64_t b = 9;  // Cost of other instructions.
-
-    static constexpr struct
-    {
-        int64_t set = 20000;
-        int64_t reset = 5000;
-        int64_t clear = 15000;
-    } c;
-
-    const auto test = [this](const evmc::bytes32& original, const evmc::bytes32& current,
-                          const evmc::bytes32& value, int64_t expected_gas_used,
-                          int64_t expected_gas_refund) {
-        auto& storage_entry = host.accounts[msg.recipient].storage[key];
-        storage_entry = {current, original};
-        execute(sstore(key, calldataload(0)), value);
-        EXPECT_EQ(storage_entry.current, value);
-        EXPECT_GAS_USED(EVMC_SUCCESS, expected_gas_used);
-        EXPECT_EQ(result.gas_refund, expected_gas_refund);
-    };
-
-    for (const auto r : {EVMC_FRONTIER, EVMC_BYZANTIUM, EVMC_PETERSBURG})
-    {
-        rev = r;
-
-        test(O, O, O, b + c.reset, 0);  // assigned
-        test(X, O, O, b + c.reset, 0);
-        test(O, Y, Y, b + c.reset, 0);
-        test(X, Y, Y, b + c.reset, 0);
-        test(Y, Y, Y, b + c.reset, 0);
-        test(O, Y, Z, b + c.reset, 0);
-        test(X, Y, Z, b + c.reset, 0);
-
-        test(O, O, Z, b + c.set, 0);          // added
-        test(X, X, O, b + c.reset, c.clear);  // deleted
-        test(X, X, Z, b + c.reset, 0);        // modified
-        test(X, O, Z, b + c.set, 0);          // deleted added
-        test(X, Y, O, b + c.reset, c.clear);  // modified deleted
-        test(X, O, X, b + c.set, 0);          // deleted restored
-        test(O, Y, O, b + c.reset, c.clear);  // added deleted
-        test(X, Y, X, b + c.reset, 0);        // modified restored
+        EXPECT_EQ(gas_used, 5112);
     }
 }
 
@@ -255,12 +175,9 @@ TEST_P(evm, sstore_cost_net_gas_metering)
     };
 
     std::array<CostConstants, EVMC_MAX_REVISION + 1> cost_constants{};
-    cost_constants[EVMC_CONSTANTINOPLE] = {200, 20000, 5000, 15000};
-    cost_constants[EVMC_ISTANBUL] = {800, 20000, 5000, 15000};
-    cost_constants[EVMC_BERLIN] = {100, 20000, 2900, 15000};
-    cost_constants[EVMC_LONDON] = {100, 20000, 2900, 4800};
+    cost_constants[EVMC_SHANGHAI] = {100, 20000, 2900, 4800};
 
-    for (const auto r : {EVMC_CONSTANTINOPLE, EVMC_ISTANBUL, EVMC_BERLIN, EVMC_LONDON})
+    for (const auto r : {EVMC_SHANGHAI})
     {
         rev = r;
         const auto& c = cost_constants.at(static_cast<size_t>(r));
@@ -288,15 +205,7 @@ TEST_P(evm, sstore_below_stipend)
 {
     const auto code = sstore(0, 0);
 
-    rev = EVMC_HOMESTEAD;
-    execute(2306, code);
-    EXPECT_EQ(result.status_code, EVMC_OUT_OF_GAS);
-
-    rev = EVMC_CONSTANTINOPLE;
-    execute(2306, code);
-    EXPECT_EQ(result.status_code, EVMC_SUCCESS);
-
-    rev = EVMC_ISTANBUL;
+    rev = EVMC_SHANGHAI;
     execute(2306, code);
     EXPECT_EQ(result.status_code, EVMC_OUT_OF_GAS);
 

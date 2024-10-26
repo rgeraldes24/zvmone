@@ -129,9 +129,9 @@
     ON_OPCODE_IDENTIFIER(OP_MSIZE, msize)                   \
     ON_OPCODE_IDENTIFIER(OP_GAS, gas)                       \
     ON_OPCODE_IDENTIFIER(OP_JUMPDEST, jumpdest)             \
-    ON_OPCODE_IDENTIFIER(OP_RJUMP, rjump)                   \
-    ON_OPCODE_IDENTIFIER(OP_RJUMPI, rjumpi)                 \
-    ON_OPCODE_IDENTIFIER(OP_RJUMPV, rjumpv)                 \
+    ON_OPCODE_UNDEFINED(0x5c)                               \
+    ON_OPCODE_UNDEFINED(0x5d)                               \
+    ON_OPCODE_UNDEFINED(0x5e)                               \
     ON_OPCODE_IDENTIFIER(OP_PUSH0, push0)                   \
                                                             \
     ON_OPCODE_IDENTIFIER(OP_PUSH1, push<1>)                 \
@@ -219,13 +219,13 @@
     ON_OPCODE_UNDEFINED(0xae)                               \
     ON_OPCODE_UNDEFINED(0xaf)                               \
                                                             \
-    ON_OPCODE_IDENTIFIER(OP_CALLF, callf)                   \
-    ON_OPCODE_IDENTIFIER(OP_RETF, retf)                     \
+    ON_OPCODE_UNDEFINED(0xb0)                               \
+    ON_OPCODE_UNDEFINED(0xb1)                               \
     ON_OPCODE_UNDEFINED(0xb2)                               \
     ON_OPCODE_UNDEFINED(0xb3)                               \
     ON_OPCODE_UNDEFINED(0xb4)                               \
-    ON_OPCODE_IDENTIFIER(OP_DUPN, dupn)                     \
-    ON_OPCODE_IDENTIFIER(OP_SWAPN, swapn)                   \
+    ON_OPCODE_UNDEFINED(0xb5)                               \
+    ON_OPCODE_UNDEFINED(0xb6)                               \
     ON_OPCODE_UNDEFINED(0xb7)                               \
     ON_OPCODE_UNDEFINED(0xb8)                               \
     ON_OPCODE_UNDEFINED(0xb9)                               \
@@ -289,7 +289,7 @@
                                                             \
     ON_OPCODE_IDENTIFIER(OP_CREATE, create)                 \
     ON_OPCODE_IDENTIFIER(OP_CALL, call)                     \
-    ON_OPCODE_IDENTIFIER(OP_CALLCODE, callcode)             \
+    ON_OPCODE_UNDEFINED(0xf2)                               \
     ON_OPCODE_IDENTIFIER(OP_RETURN, return_)                \
     ON_OPCODE_IDENTIFIER(OP_DELEGATECALL, delegatecall)     \
     ON_OPCODE_IDENTIFIER(OP_CREATE2, create2)               \
@@ -302,4 +302,4 @@
     ON_OPCODE_UNDEFINED(0xfc)                               \
     ON_OPCODE_IDENTIFIER(OP_REVERT, revert)                 \
     ON_OPCODE_IDENTIFIER(OP_INVALID, invalid)               \
-    ON_OPCODE_IDENTIFIER(OP_SELFDESTRUCT, selfdestruct)
+    ON_OPCODE_UNDEFINED(0xff)

@@ -10,14 +10,13 @@
 #include <evmone/advanced_analysis.hpp>
 #include <evmone/advanced_execution.hpp>
 #include <evmone/baseline.hpp>
-#include <evmone/eof.hpp>
 #include <evmone/vm.hpp>
 
 namespace evmone::test
 {
 extern std::map<std::string_view, evmc::VM> registered_vms;
 
-constexpr auto default_revision = EVMC_ISTANBUL;
+constexpr auto default_revision = EVMC_SHANGHAI;
 constexpr auto default_gas_limit = std::numeric_limits<int64_t>::max();
 
 

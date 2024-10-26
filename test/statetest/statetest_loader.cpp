@@ -4,7 +4,6 @@
 
 #include "../utils/stdx/utility.hpp"
 #include "statetest.hpp"
-#include <evmone/eof.hpp>
 #include <nlohmann/json.hpp>
 
 namespace evmone::test
@@ -150,16 +149,9 @@ inline uint64_t calculate_current_base_fee_eip1559(
 template <>
 state::BlockInfo from_json<state::BlockInfo>(const json::json& j)
 {
-    evmc::bytes32 difficulty;
-    const auto prev_randao_it = j.find("currentRandom");
-    const auto current_difficulty_it = j.find("currentDifficulty");
-    const auto parent_difficulty_it = j.find("parentDifficulty");
-    if (prev_randao_it != j.end())
-        difficulty = from_json<bytes32>(*prev_randao_it);
-    else if (current_difficulty_it != j.end())
-        difficulty = from_json<bytes32>(*current_difficulty_it);
-    else if (parent_difficulty_it != j.end())
-        difficulty = from_json<bytes32>(*parent_difficulty_it);
+    evmc::bytes32 random;
+    if (const auto prev_randao_it = j.find("currentRandom"); prev_randao_it != j.end())
+        random = from_json<bytes32>(*prev_randao_it);
 
     uint64_t base_fee = 0;
     if (j.contains("currentBaseFee"))
@@ -183,7 +175,7 @@ state::BlockInfo from_json<state::BlockInfo>(const json::json& j)
 
     return {from_json<int64_t>(j.at("currentNumber")), from_json<int64_t>(j.at("currentTimestamp")),
         from_json<int64_t>(j.at("currentGasLimit")),
-        from_json<evmc::address>(j.at("currentCoinbase")), difficulty, base_fee,
+        from_json<evmc::address>(j.at("currentCoinbase")), random, base_fee,
         std::move(withdrawals)};
 }
 
@@ -213,36 +205,8 @@ state::State from_json<state::State>(const json::json& j)
 
 evmc_revision to_rev(std::string_view s)
 {
-    if (s == "Frontier")
-        return EVMC_FRONTIER;
-    if (s == "Homestead")
-        return EVMC_HOMESTEAD;
-    if (s == "EIP150")
-        return EVMC_TANGERINE_WHISTLE;
-    if (s == "EIP158")
-        return EVMC_SPURIOUS_DRAGON;
-    if (s == "Byzantium")
-        return EVMC_BYZANTIUM;
-    if (s == "Constantinople")
-        return EVMC_CONSTANTINOPLE;
-    if (s == "ConstantinopleFix")
-        return EVMC_PETERSBURG;
-    if (s == "Istanbul")
-        return EVMC_ISTANBUL;
-    if (s == "Berlin")
-        return EVMC_BERLIN;
-    if (s == "London")
-        return EVMC_LONDON;
-    if (s == "Merge")
-        return EVMC_PARIS;
-    if (s == "Merge+3855")  // PUSH0
-        return EVMC_SHANGHAI;
     if (s == "Shanghai")
         return EVMC_SHANGHAI;
-    if (s == "Cancun")
-        return EVMC_CANCUN;
-    if (s == "Prague")
-        return EVMC_PRAGUE;
     throw std::invalid_argument{"unknown revision: " + std::string{s}};
 }
 
@@ -254,23 +218,9 @@ static void from_json_tx_common(const json::json& j, state::Transaction& o)
     if (const auto to_it = j.find("to"); to_it != j.end() && !to_it->get<std::string>().empty())
         o.to = from_json<evmc::address>(*to_it);
 
-    if (const auto gas_price_it = j.find("gasPrice"); gas_price_it != j.end())
-    {
-        o.kind = state::Transaction::Kind::legacy;
-        o.max_gas_price = from_json<intx::uint256>(*gas_price_it);
-        o.max_priority_gas_price = o.max_gas_price;
-        if (j.contains("maxFeePerGas") || j.contains("maxPriorityFeePerGas"))
-        {
-            throw std::invalid_argument(
-                "invalid transaction: contains both legacy and EIP-1559 fees");
-        }
-    }
-    else
-    {
-        o.kind = state::Transaction::Kind::eip1559;
-        o.max_gas_price = from_json<intx::uint256>(j.at("maxFeePerGas"));
-        o.max_priority_gas_price = from_json<intx::uint256>(j.at("maxPriorityFeePerGas"));
-    }
+    o.kind = state::Transaction::Kind::eip1559;
+    o.max_gas_price = from_json<intx::uint256>(j.at("maxFeePerGas"));
+    o.max_priority_gas_price = from_json<intx::uint256>(j.at("maxPriorityFeePerGas"));
 }
 
 template <>
@@ -287,8 +237,6 @@ state::Transaction from_json<state::Transaction>(const json::json& j)
     if (const auto ac_it = j.find("accessList"); ac_it != j.end())
     {
         o.access_list = from_json<state::AccessList>(*ac_it);
-        if (o.kind == state::Transaction::Kind::legacy)  // Upgrade tx type if tx has "accessList"
-            o.kind = state::Transaction::Kind::eip2930;
     }
 
     if (const auto type_it = j.find("type"); type_it != j.end())
@@ -298,9 +246,8 @@ state::Transaction from_json<state::Transaction>(const json::json& j)
     }
 
     o.nonce = from_json<uint64_t>(j.at("nonce"));
-    o.r = from_json<intx::uint256>(j.at("r"));
-    o.s = from_json<intx::uint256>(j.at("s"));
-    o.v = from_json<uint8_t>(j.at("v"));
+    o.public_key = from_json<bytes>(j.at("publicKey"));
+    o.signature = from_json<bytes>(j.at("signature"));
 
     return o;
 }
@@ -370,30 +317,5 @@ static void from_json(const json::json& j, StateTransitionTest& o)
 StateTransitionTest load_state_test(std::istream& input)
 {
     return json::json::parse(input).get<StateTransitionTest>();
-}
-
-void validate_deployed_code(const state::State& state, evmc_revision rev)
-{
-    for (const auto& [addr, acc] : state.get_accounts())
-    {
-        if (is_eof_container(acc.code))
-        {
-            if (rev >= EVMC_CANCUN)
-            {
-                if (const auto result = validate_eof(rev, acc.code);
-                    result != EOFValidationError::success)
-                {
-                    throw std::invalid_argument(
-                        "EOF container at " + hex0x(addr) +
-                        " is invalid: " + std::string(get_error_message(result)));
-                }
-            }
-            else
-            {
-                throw std::invalid_argument("code at " + hex0x(addr) + " starts with 0xEF00 in " +
-                                            evmc_revision_to_string(rev));
-            }
-        }
-    }
 }
 }  // namespace evmone::test

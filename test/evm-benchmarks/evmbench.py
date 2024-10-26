@@ -10,10 +10,11 @@ BASE_FEE = 1
 GAS_LIMIT = 10 ** 9
 
 ORIGIN = '0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'
-ORIGIN_PRIV_KEY = '0x45a915e4d060149eb4365960e6a7a45f334393093061116b197e3240065ff2d8'
+ORIGIN_SEED = '0x41f6e321b31e72173f8ff2e292359e1862f24fba42fe6f97efaf641980eff29862f24fba42fe6f97efaf641980eff298'
 COINBASE = ORIGIN
+RANDOM = ORIGIN
 
-NETWORK = 'London'
+NETWORK = 'Shanghai'
 
 
 # Decode DRY text.
@@ -58,11 +59,11 @@ def build_source(src_file, out_file):
     env = test.setdefault('env', {})
     env.setdefault('currentBaseFee', BASE_FEE)
     env.setdefault('currentCoinbase', COINBASE)
-    env.setdefault('currentDifficulty', 1)
     env.setdefault('currentGasLimit', GAS_LIMIT)
+    env.setdefault('currentRandom', RANDOM)
     env.setdefault('currentNumber', 1)
     env.setdefault('currentTimestamp', 1638453897)
-    env.setdefault('previousHash', '0x5e20a0453cecd065ea59c37ac63e079ee08998b6045136a8ce6635c7912ec0b6')
+    env.setdefault('withdrawals', [])
 
     pre = test['pre']
     pre.setdefault(ORIGIN, {}).setdefault('balance', GAS_LIMIT * BASE_FEE)
@@ -76,8 +77,9 @@ def build_source(src_file, out_file):
     tx.setdefault('gasLimit', [GAS_LIMIT])
     tx.setdefault('value', [0])
     tx.setdefault('nonce', 0)
-    tx.setdefault('gasPrice', BASE_FEE)
-    tx.setdefault('secretKey', ORIGIN_PRIV_KEY)
+    tx.setdefault('maxFeePerGas', BASE_FEE)
+    tx.setdefault('maxPriorityFeePerGas', 0)
+    tx.setdefault('seed', ORIGIN_SEED)
 
     expect = []
     for i, data in enumerate(tx['data']):

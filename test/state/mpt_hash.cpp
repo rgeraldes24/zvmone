@@ -40,7 +40,6 @@ hash256 mpt_hash(std::span<const Transaction> transactions)
     MPT trie;
     for (size_t i = 0; i < transactions.size(); ++i)
         trie.insert(rlp::encode(i), rlp::encode(transactions[i]));
-
     return trie.hash();
 }
 

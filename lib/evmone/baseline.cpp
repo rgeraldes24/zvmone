@@ -4,7 +4,6 @@
 
 #include "baseline.hpp"
 #include "baseline_instruction_table.hpp"
-#include "eof.hpp"
 #include "execution_state.hpp"
 #include "instructions.hpp"
 #include "vm.hpp"
@@ -66,28 +65,11 @@ CodeAnalysis analyze_legacy(bytes_view code)
     // TODO: The padded code buffer and jumpdest bitmap can be created with single allocation.
     return {pad_code(code), code.size(), analyze_jumpdests(code)};
 }
-
-CodeAnalysis analyze_eof1(bytes_view container)
-{
-    auto header = read_valid_eof1_header(container);
-
-    // Extract all code sections as single buffer reference.
-    // TODO: It would be much easier if header had code_sections_offset and data_section_offset
-    //       with code_offsets[] being relative to code_sections_offset.
-    const auto code_sections_offset = header.code_offsets[0];
-    const auto code_sections_end = size_t{header.code_offsets.back()} + header.code_sizes.back();
-    const auto executable_code =
-        container.substr(code_sections_offset, code_sections_end - code_sections_offset);
-
-    return CodeAnalysis{executable_code, std::move(header)};
-}
 }  // namespace
 
-CodeAnalysis analyze(evmc_revision rev, bytes_view code)
+CodeAnalysis analyze(evmc_revision /*rev*/, bytes_view code)
 {
-    if (rev < EVMC_CANCUN || !is_eof_container(code))
-        return analyze_legacy(code);
-    return analyze_eof1(code);
+    return analyze_legacy(code);
 }
 
 namespace
@@ -112,10 +94,10 @@ inline evmc_status_code check_requirements(const CostTable& cost_table, int64_t&
     const uint256* stack_top, const uint256* stack_bottom) noexcept
 {
     static_assert(
-        !instr::has_const_gas_cost(Op) || instr::gas_costs[EVMC_FRONTIER][Op] != instr::undefined,
+        !instr::has_const_gas_cost(Op) || instr::gas_costs[EVMC_SHANGHAI][Op] != instr::undefined,
         "undefined instructions must not be handled by check_requirements()");
 
-    auto gas_cost = instr::gas_costs[EVMC_FRONTIER][Op];  // Init assuming const cost.
+    auto gas_cost = instr::gas_costs[EVMC_SHANGHAI][Op];  // Init assuming const cost.
     if constexpr (!instr::has_const_gas_cost(Op))
     {
         gas_cost = cost_table[Op];  // If not, load the cost from the table.
@@ -330,7 +312,7 @@ evmc_result execute(
 
     const auto code = analysis.executable_code;
 
-    const auto& cost_table = get_baseline_cost_table(state.rev, analysis.eof_header.version);
+    const auto& cost_table = get_baseline_cost_table(state.rev);
 
     auto* tracer = vm.get_tracer();
     if (INTX_UNLIKELY(tracer != nullptr))

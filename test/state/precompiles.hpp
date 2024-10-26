@@ -14,15 +14,13 @@ inline constexpr std::size_t NumPrecompiles = 10;
 
 enum class PrecompileId : uint8_t
 {
-    ecrecover = 0x01,
+    depositroot = 0x01,
     sha256 = 0x02,
-    ripemd160 = 0x03,
     identity = 0x04,
     expmod = 0x05,
     ecadd = 0x06,
     ecmul = 0x07,
     ecpairing = 0x08,
-    blake2bf = 0x09,
 };
 
 struct ExecutionResult

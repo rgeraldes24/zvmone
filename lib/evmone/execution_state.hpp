@@ -127,12 +127,11 @@ public:
     Memory memory;
     const evmc_message* msg = nullptr;
     evmc::HostContext host;
-    evmc_revision rev = {};
+    evmc_revision rev = EVMC_SHANGHAI;
     bytes return_data;
 
     /// Reference to original EVM code container.
     /// For legacy code this is a reference to entire original code.
-    /// For EOF-formatted code this is a reference to entire container.
     bytes_view original_code;
 
     evmc_status_code status = EVMC_SUCCESS;

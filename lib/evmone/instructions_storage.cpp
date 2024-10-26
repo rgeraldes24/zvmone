@@ -11,7 +11,6 @@ namespace
 /// The gas cost specification for storage instructions.
 struct StorageCostSpec
 {
-    bool net_cost;        ///< Is this net gas cost metering schedule?
     int16_t warm_access;  ///< Storage warm access cost, YP: G_{warmaccess}
     int16_t set;          ///< Storage addition cost, YP: G_{sset}
     int16_t reset;        ///< Storage modification cost, YP: G_{sreset}
@@ -24,21 +23,9 @@ struct StorageCostSpec
 constexpr auto storage_cost_spec = []() noexcept {
     std::array<StorageCostSpec, EVMC_MAX_REVISION + 1> tbl{};
 
-    // Legacy cost schedule.
-    for (auto rev : {EVMC_FRONTIER, EVMC_HOMESTEAD, EVMC_TANGERINE_WHISTLE, EVMC_SPURIOUS_DRAGON,
-             EVMC_BYZANTIUM, EVMC_PETERSBURG})
-        tbl[rev] = {false, 200, 20000, 5000, 15000};
-
     // Net cost schedule.
-    tbl[EVMC_CONSTANTINOPLE] = {true, 200, 20000, 5000, 15000};
-    tbl[EVMC_ISTANBUL] = {true, 800, 20000, 5000, 15000};
-    tbl[EVMC_BERLIN] = {
-        true, instr::warm_storage_read_cost, 20000, 5000 - instr::cold_sload_cost, 15000};
-    tbl[EVMC_LONDON] = {
-        true, instr::warm_storage_read_cost, 20000, 5000 - instr::cold_sload_cost, 4800};
-    tbl[EVMC_PARIS] = tbl[EVMC_LONDON];
-    tbl[EVMC_SHANGHAI] = tbl[EVMC_LONDON];
-    tbl[EVMC_CANCUN] = tbl[EVMC_LONDON];
+    tbl[EVMC_SHANGHAI] = {
+        instr::warm_storage_read_cost, 20000, 5000 - instr::cold_sload_cost, 4800};
     return tbl;
 }();
 
@@ -55,36 +42,22 @@ constexpr auto sstore_costs = []() noexcept {
         EVMC_MAX_REVISION + 1>
         tbl{};
 
-    for (size_t rev = EVMC_FRONTIER; rev <= EVMC_MAX_REVISION; ++rev)
+    for (size_t rev = EVMC_SHANGHAI; rev <= EVMC_MAX_REVISION; ++rev)
     {
         auto& e = tbl[rev];
-        if (const auto c = storage_cost_spec[rev]; !c.net_cost)  // legacy
-        {
-            e[EVMC_STORAGE_ADDED] = {c.set, 0};
-            e[EVMC_STORAGE_DELETED] = {c.reset, c.clear};
-            e[EVMC_STORAGE_MODIFIED] = {c.reset, 0};
-            e[EVMC_STORAGE_ASSIGNED] = e[EVMC_STORAGE_MODIFIED];
-            e[EVMC_STORAGE_DELETED_ADDED] = e[EVMC_STORAGE_ADDED];
-            e[EVMC_STORAGE_MODIFIED_DELETED] = e[EVMC_STORAGE_DELETED];
-            e[EVMC_STORAGE_DELETED_RESTORED] = e[EVMC_STORAGE_ADDED];
-            e[EVMC_STORAGE_ADDED_DELETED] = e[EVMC_STORAGE_DELETED];
-            e[EVMC_STORAGE_MODIFIED_RESTORED] = e[EVMC_STORAGE_MODIFIED];
-        }
-        else  // net cost
-        {
-            e[EVMC_STORAGE_ASSIGNED] = {c.warm_access, 0};
-            e[EVMC_STORAGE_ADDED] = {c.set, 0};
-            e[EVMC_STORAGE_DELETED] = {c.reset, c.clear};
-            e[EVMC_STORAGE_MODIFIED] = {c.reset, 0};
-            e[EVMC_STORAGE_DELETED_ADDED] = {c.warm_access, static_cast<int16_t>(-c.clear)};
-            e[EVMC_STORAGE_MODIFIED_DELETED] = {c.warm_access, c.clear};
-            e[EVMC_STORAGE_DELETED_RESTORED] = {
-                c.warm_access, static_cast<int16_t>(c.reset - c.warm_access - c.clear)};
-            e[EVMC_STORAGE_ADDED_DELETED] = {
-                c.warm_access, static_cast<int16_t>(c.set - c.warm_access)};
-            e[EVMC_STORAGE_MODIFIED_RESTORED] = {
-                c.warm_access, static_cast<int16_t>(c.reset - c.warm_access)};
-        }
+        const auto c = storage_cost_spec[rev];
+        e[EVMC_STORAGE_ASSIGNED] = {c.warm_access, 0};
+        e[EVMC_STORAGE_ADDED] = {c.set, 0};
+        e[EVMC_STORAGE_DELETED] = {c.reset, c.clear};
+        e[EVMC_STORAGE_MODIFIED] = {c.reset, 0};
+        e[EVMC_STORAGE_DELETED_ADDED] = {c.warm_access, static_cast<int16_t>(-c.clear)};
+        e[EVMC_STORAGE_MODIFIED_DELETED] = {c.warm_access, c.clear};
+        e[EVMC_STORAGE_DELETED_RESTORED] = {
+            c.warm_access, static_cast<int16_t>(c.reset - c.warm_access - c.clear)};
+        e[EVMC_STORAGE_ADDED_DELETED] = {
+            c.warm_access, static_cast<int16_t>(c.set - c.warm_access)};
+        e[EVMC_STORAGE_MODIFIED_RESTORED] = {
+            c.warm_access, static_cast<int16_t>(c.reset - c.warm_access)};
     }
 
     return tbl;
@@ -96,8 +69,7 @@ Result sload(StackTop stack, int64_t gas_left, ExecutionState& state) noexcept
     auto& x = stack.top();
     const auto key = intx::be::store<evmc::bytes32>(x);
 
-    if (state.rev >= EVMC_BERLIN &&
-        state.host.access_storage(state.msg->recipient, key) == EVMC_ACCESS_COLD)
+    if (state.host.access_storage(state.msg->recipient, key) == EVMC_ACCESS_COLD)
     {
         // The warm storage access cost is already applied (from the cost table).
         // Here we need to apply additional cold storage access cost.
@@ -117,15 +89,14 @@ Result sstore(StackTop stack, int64_t gas_left, ExecutionState& state) noexcept
     if (state.in_static_mode())
         return {EVMC_STATIC_MODE_VIOLATION, gas_left};
 
-    if (state.rev >= EVMC_ISTANBUL && gas_left <= 2300)
+    if (gas_left <= 2300)
         return {EVMC_OUT_OF_GAS, gas_left};
 
     const auto key = intx::be::store<evmc::bytes32>(stack.pop());
     const auto value = intx::be::store<evmc::bytes32>(stack.pop());
 
     const auto gas_cost_cold =
-        (state.rev >= EVMC_BERLIN &&
-            state.host.access_storage(state.msg->recipient, key) == EVMC_ACCESS_COLD) ?
+        (state.host.access_storage(state.msg->recipient, key) == EVMC_ACCESS_COLD) ?
             instr::cold_sload_cost :
             0;
     const auto status = state.host.set_storage(state.msg->recipient, key, value);

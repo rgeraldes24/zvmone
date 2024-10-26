@@ -91,12 +91,6 @@ public:
     }
 };
 
-/// The newest "old" EVM revision. Lower priority.
-static constexpr auto old_rev = EVMC_SPURIOUS_DRAGON;
-
-/// The additional gas limit cap for "old" EVM revisions.
-static constexpr auto old_rev_max_gas = 500000;
-
 struct fuzz_input
 {
     evmc_revision rev{};
@@ -192,7 +186,7 @@ fuzz_input populate_input(const uint8_t* data, size_t data_size) noexcept
     if (data_size < min_required_size)
         return in;
 
-    const auto rev_4bits = data[0] >> 4;
+    // const auto rev_4bits = data[0] >> 4;
     const auto kind_1bit = (data[0] >> 3) & 0b1;
     const auto static_1bit = (data[0] >> 2) & 0b1;
     const auto depth_2bits = uint8_t(data[0] & 0b11);
@@ -227,8 +221,10 @@ fuzz_input populate_input(const uint8_t* data, size_t data_size) noexcept
     if (data_size < input_size_16bits)  // Not enough data for input.
         return in;
 
-    in.rev = (rev_4bits > EVMC_LATEST_STABLE_REVISION) ? EVMC_LATEST_STABLE_REVISION :
-                                                         static_cast<evmc_revision>(rev_4bits);
+    // NOTE(rgeraldes24): come back to this on as soon as we have more forks
+    // in.rev = (rev_4bits > EVMC_LATEST_STABLE_REVISION) ? EVMC_LATEST_STABLE_REVISION :
+    //                                                      static_cast<evmc_revision>(rev_4bits);
+    in.rev = EVMC_LATEST_STABLE_REVISION;
 
     // The message king should not matter but this 1 bit was free.
     in.msg.kind = kind_1bit ? EVMC_CREATE : EVMC_CALL;
@@ -236,10 +232,7 @@ fuzz_input populate_input(const uint8_t* data, size_t data_size) noexcept
     in.msg.flags = static_1bit ? EVMC_STATIC : 0;
     in.msg.depth = generate_depth(depth_2bits);
 
-    // Set the gas limit. For old revisions cap the gas limit more because:
-    // - they are less priority,
-    // - pre Tangerine Whistle calls are extremely cheap and it is easy to find slow running units.
-    in.msg.gas = in.rev <= old_rev ? std::min(gas_24bits, old_rev_max_gas) : gas_24bits;
+    in.msg.gas = gas_24bits;
 
     in.msg.recipient = generate_interesting_address(destination_8bits);
     in.msg.sender = generate_interesting_address(sender_8bits);
@@ -368,10 +361,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t data_size) noe
             ASSERT(std::equal(ref_host.recorded_blockhashes.begin(),
                 ref_host.recorded_blockhashes.end(), host.recorded_blockhashes.begin(),
                 host.recorded_blockhashes.end()));
-
-            ASSERT(std::equal(ref_host.recorded_selfdestructs.begin(),
-                ref_host.recorded_selfdestructs.end(), host.recorded_selfdestructs.begin(),
-                host.recorded_selfdestructs.end()));
 
             // TODO: Enable account accesses check. Currently this is not possible because Aleth
             //       is doing additional unnecessary account existence checks in calls.

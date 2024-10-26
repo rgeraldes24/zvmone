@@ -10,19 +10,10 @@
 using namespace evmc::literals;
 using evmone::test::evm;
 
-TEST_P(evm, basefee_pre_london)
-{
-    rev = EVMC_BERLIN;
-    const auto code = bytecode{OP_BASEFEE};
-
-    execute(code);
-    EXPECT_STATUS(EVMC_UNDEFINED_INSTRUCTION);
-}
-
 TEST_P(evm, basefee_nominal_case)
 {
     // https://eips.ethereum.org/EIPS/eip-3198#nominal-case
-    rev = EVMC_LONDON;
+    rev = EVMC_SHANGHAI;
     host.tx_context.block_base_fee = evmc::bytes32{7};
 
     execute(bytecode{} + OP_BASEFEE + OP_STOP);

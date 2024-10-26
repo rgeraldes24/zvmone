@@ -18,7 +18,7 @@ TEST_P(evm, create_initcode_limit)
     for (const auto& c : {create().input(0, calldataload(0)) + ret_top(),
              create2().input(0, calldataload(0)) + ret_top()})
     {
-        for (const auto r : {EVMC_PARIS, EVMC_SHANGHAI})
+        for (const auto r : {EVMC_SHANGHAI})
         {
             rev = r;
             for (const auto s : {initcode_size_limit, initcode_size_limit + 1})

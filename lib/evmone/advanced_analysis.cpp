@@ -98,7 +98,6 @@ AdvancedCodeAnalysis analyze(evmc_revision rev, bytes_view code) noexcept
         case OP_STOP:
         case OP_RETURN:
         case OP_REVERT:
-        case OP_SELFDESTRUCT:
             // Skip dead block instructions till next JUMPDEST or code end.
             // Current instruction will be final one in the block.
             while (code_pos != code_end && *code_pos != OP_JUMPDEST)
@@ -166,7 +165,6 @@ AdvancedCodeAnalysis analyze(evmc_revision rev, bytes_view code) noexcept
 
         case OP_GAS:
         case OP_CALL:
-        case OP_CALLCODE:
         case OP_DELEGATECALL:
         case OP_STATICCALL:
         case OP_CREATE:

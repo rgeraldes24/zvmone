@@ -38,9 +38,9 @@ protected:
     /// The VM handle.
     evmc::VM& vm;
 
-    /// The EVM revision for unit test execution. Byzantium by default.
+    /// The EVM revision for unit test execution. Shanghai by default.
     /// TODO: Add alias evmc::revision.
-    evmc_revision rev = EVMC_BYZANTIUM;
+    evmc_revision rev = EVMC_SHANGHAI;
 
     /// The message to be executed by a unit test (with execute() method).
     /// TODO: Add evmc::message with default constructor.
@@ -73,11 +73,9 @@ protected:
         msg.input_size = input.size();
         msg.gas = gas;
 
-        if (rev >= EVMC_BERLIN)  // Add EIP-2929 tweak.
-        {
-            host.access_account(msg.sender);
-            host.access_account(msg.recipient);
-        }
+        // Add EIP-2929 tweak.
+        host.access_account(msg.sender);
+        host.access_account(msg.recipient);
 
         result = vm.execute(host, rev, msg, code.data(), code.size());
         output = {result.output_data, result.output_size};

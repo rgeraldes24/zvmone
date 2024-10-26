@@ -10,15 +10,6 @@
 using namespace evmc::literals;
 using evmone::test::evm;
 
-TEST_P(evm, push0_pre_shanghai)
-{
-    rev = EVMC_PARIS;
-    const auto code = bytecode{OP_PUSH0};
-
-    execute(code);
-    EXPECT_STATUS(EVMC_UNDEFINED_INSTRUCTION);
-}
-
 TEST_P(evm, push0)
 {
     rev = EVMC_SHANGHAI;

@@ -8,21 +8,15 @@ target_sources(
     evmone-unittests PRIVATE
     analysis_test.cpp
     bytecode_test.cpp
-    eof_test.cpp
-    eof_validation_test.cpp
     evm_fixture.cpp
     evm_fixture.hpp
     evm_test.cpp
     evm_calls_test.cpp
     evm_control_flow_test.cpp
-    evm_eip663_dupn_swapn_test.cpp
     evm_eip2929_test.cpp
     evm_eip3198_basefee_test.cpp
     evm_eip3855_push0_test.cpp
     evm_eip3860_initcode_test.cpp
-    evm_eof_test.cpp
-    evm_eof_function_test.cpp
-    evm_eof_rjump_test.cpp
     evm_memory_test.cpp
     evm_state_test.cpp
     evm_storage_test.cpp
@@ -40,7 +34,6 @@ target_sources(
     state_transition.cpp
     state_transition_block_test.cpp
     state_transition_create_test.cpp
-    state_transition_eof_test.cpp
     statetest_loader_block_info_test.cpp
     statetest_loader_test.cpp
     statetest_loader_tx_test.cpp

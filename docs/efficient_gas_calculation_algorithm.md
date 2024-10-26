@@ -56,8 +56,7 @@ In EVM there are simple rules to identify basic instruction block boundaries:
    - `JUMPI`,
    - `STOP`,
    - `RETURN`,
-   - `REVERT`,
-   - `SELFDESTRUCT`.
+   - `REVERT`.
 
 A basic instruction block is a shortest sequence of instructions such that 
 a basic block starts before the first instruction and ends after the last.

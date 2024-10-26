@@ -132,8 +132,6 @@ memory_access_opcode memory_access_opcodes[] = {
     {OP_REVERT, 0, 1},
     {OP_CALL, 3, 4},
     {OP_CALL, 5, 6},
-    {OP_CALLCODE, 3, 4},
-    {OP_CALLCODE, 5, 6},
     {OP_DELEGATECALL, 2, 3},
     {OP_DELEGATECALL, 4, 5},
     {OP_STATICCALL, 2, 3},
@@ -176,7 +174,7 @@ TEST_P(evm, memory_access)
 {
     // This test checks if instructions accessing memory properly respond with out-of-gas
     // error for combinations of memory offset and memory size arguments.
-    rev = EVMC_CONSTANTINOPLE;
+    rev = EVMC_SHANGHAI;
 
     for (const auto& p : memory_access_test_cases)
     {
