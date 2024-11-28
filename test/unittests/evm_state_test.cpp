@@ -229,7 +229,7 @@ TEST_P(evm, blockhash)
 
 TEST_P(evm, extcode)
 {
-    constexpr auto addr = 0xfffffffffffffffffffffffffffffffffffffffe_address;
+    constexpr auto addr = "Zfffffffffffffffffffffffffffffffffffffffe"_address;
     host.accounts[addr].code = {'a', 'b', 'c', 'd'};
 
     bytecode code;
@@ -249,7 +249,7 @@ TEST_P(evm, extcode)
 
 TEST_P(evm, extcodesize)
 {
-    constexpr auto addr = 0x0000000000000000000000000000000000000002_address;
+    constexpr auto addr = "Z0000000000000000000000000000000000000002"_address;
     host.accounts[addr].code = {'\0'};
     execute(push(2) + OP_EXTCODESIZE + ret_top());
     EXPECT_OUTPUT_INT(1);
@@ -313,7 +313,7 @@ TEST_P(evm, extcodecopy_memory_cost)
 
 TEST_P(evm, extcodecopy_nonzero_index)
 {
-    constexpr auto addr = 0x000000000000000000000000000000000000000a_address;
+    constexpr auto addr = "Z000000000000000000000000000000000000000a"_address;
     constexpr auto index = 15;
 
     auto& extcode = host.accounts[addr].code;

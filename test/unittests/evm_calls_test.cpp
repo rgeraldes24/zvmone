@@ -10,41 +10,40 @@
 using namespace evmc::literals;
 using evmone::test::evm;
 
-// TODO(rgeraldes24): fix:
 // Expected equality of these values:
 //   output
 //     Which is: { '\0', '\0', '\0', '\0', '\n' (10, 0xA), '\v' (11, 0xB), '\f' (12, 0xC), '\0' }
 //   (bytes{0xff, 0xff, 0xff, 0xff, 0xa, 0xb, 0xc, 0xff})
 //     Which is: { '\xFF' (255), '\xFF' (255), '\xFF' (255), '\xFF' (255), '\n' (10, 0xA), '\v' (11,
 //     0xB), '\f' (12, 0xC), '\xFF' (255) }
-// TEST_P(evm, delegatecall)
-// {
-//     auto code = bytecode{};
-//     code += "6001600003600052";              // m[0] = 0xffffff...
-//     code += "600560046003600260016103e8f4";  // DELEGATECALL(1000, 0x01, ...)
-//     code += "60086000f3";
+TEST_P(evm, delegatecall)
+{
+    auto code = bytecode{};
+    code += "6001600003600052";              // m[0] = 0xffffff...
+    code += "600560046003600260016103e8f4";  // DELEGATECALL(1000, 0x01, ...)
+    code += "60086000f3";
 
-//     auto call_output = bytes{0xa, 0xb, 0xc};
-//     host.call_result.output_data = call_output.data();
-//     host.call_result.output_size = call_output.size();
-//     host.call_result.gas_left = 1;
+    auto call_output = bytes{0xa, 0xb, 0xc};
+    host.call_result.output_data = call_output.data();
+    host.call_result.output_size = call_output.size();
+    host.call_result.gas_left = 1;
 
-//     msg.value.bytes[17] = 0xfe;
+    msg.value.bytes[17] = 0xfe;
 
-//     execute(1700, code);
+    execute(1700, code);
 
-//     EXPECT_EQ(gas_used, 1141);
-//     EXPECT_EQ(result.status_code, EVMC_SUCCESS);
+    EXPECT_EQ(gas_used, 1141);
+    EXPECT_EQ(result.status_code, EVMC_SUCCESS);
 
-//     ASSERT_EQ(host.recorded_calls.size(), 1);
-//     const auto& call_msg = host.recorded_calls.back();
-//     EXPECT_EQ(call_msg.gas, 1000);
-//     EXPECT_EQ(call_msg.input_size, 3);
-//     EXPECT_EQ(call_msg.value.bytes[17], 0xfe);
+    ASSERT_EQ(host.recorded_calls.size(), 1);
+    const auto& call_msg = host.recorded_calls.back();
+    EXPECT_EQ(call_msg.gas, 1000);
+    EXPECT_EQ(call_msg.input_size, 3);
+    EXPECT_EQ(call_msg.value.bytes[17], 0xfe);
 
-//     ASSERT_EQ(result.output_size, 8);
-//     EXPECT_EQ(output, (bytes{0xff, 0xff, 0xff, 0xff, 0xa, 0xb, 0xc, 0xff}));
-// }
+    ASSERT_EQ(result.output_size, 8);
+    EXPECT_EQ(output, (bytes{0xff, 0xff, 0xff, 0xff, 0xa, 0xb, 0xc, 0xff}));
+}
 
 TEST_P(evm, delegatecall_static)
 {
@@ -80,7 +79,7 @@ TEST_P(evm, create)
     auto call_output = bytes{0xa, 0xb, 0xc};
     host.call_result.output_data = call_output.data();
     host.call_result.output_size = call_output.size();
-    host.call_result.create_address = 0xcc010203040506070809010203040506070809ce_address;
+    host.call_result.create_address = "Zcc010203040506070809010203040506070809ce"_address;
     host.call_result.gas_left = 200000;
     execute(300000, sstore(1, create().value(1).input(0, 0x20)));
 
@@ -122,7 +121,7 @@ TEST_P(evm, create2)
     const bytes call_output{0xa, 0xb, 0xc};
     host.call_result.output_data = call_output.data();
     host.call_result.output_size = call_output.size();
-    host.call_result.create_address = 0xc2010203040506070809010203040506070809ce_address;
+    host.call_result.create_address = "Zc2010203040506070809010203040506070809ce"_address;
     host.call_result.gas_left = 200000;
     execute(300000, sstore(1, create2().value(1).input(0, 0x41).salt(0x5a)));
     EXPECT_GAS_USED(EVMC_SUCCESS, 117917);
@@ -171,7 +170,7 @@ TEST_P(evm, create_balance_too_low)
 
 TEST_P(evm, create_failure)
 {
-    host.call_result.create_address = 0x00000000000000000000000000000000000000ce_address;
+    host.call_result.create_address = "Z00000000000000000000000000000000000000ce"_address;
     const auto create_address =
         bytes_view{host.call_result.create_address.bytes, sizeof(host.call_result.create_address)};
     rev = EVMC_SHANGHAI;
@@ -208,7 +207,7 @@ TEST_P(evm, create_failure)
 
 TEST_P(evm, call_failing_with_value)
 {
-    host.accounts[0x00000000000000000000000000000000000000aa_address] = {};
+    host.accounts["Z00000000000000000000000000000000000000aa"_address] = {};
     for (auto op : {OP_CALL})
     {
         const auto code = push(0xff) + push(0) + OP_DUP2 + OP_DUP2 + push(1) + push(0xaa) +
@@ -235,8 +234,8 @@ TEST_P(evm, call_with_value)
 {
     constexpr auto code = "60ff600060ff6000600160aa618000f150";
 
-    constexpr auto call_sender = 0x5e4d00000000000000000000000000000000d4e5_address;
-    constexpr auto call_dst = 0x00000000000000000000000000000000000000aa_address;
+    constexpr auto call_sender = "Z5e4d00000000000000000000000000000000d4e5"_address;
+    constexpr auto call_dst = "Z00000000000000000000000000000000000000aa"_address;
 
     msg.recipient = call_sender;
     host.accounts[msg.recipient].set_balance(1);
@@ -325,7 +324,7 @@ TEST_P(evm, call_output)
 TEST_P(evm, call_high_gas)
 {
     rev = EVMC_SHANGHAI;
-    host.accounts[0xaa_address] = {};
+    host.accounts["Zaa"_address] = {};
 
     for (auto call_opcode : {OP_CALL, OP_DELEGATECALL})
     {
@@ -351,14 +350,14 @@ TEST_P(evm, call_value_zero_to_nonexistent_account)
     EXPECT_EQ(call_msg.depth, 1);
     EXPECT_EQ(call_msg.gas, 6000);
     EXPECT_EQ(call_msg.input_size, 64);
-    EXPECT_EQ(call_msg.recipient, 0x00000000000000000000000000000000000000aa_address);
+    EXPECT_EQ(call_msg.recipient, "Z00000000000000000000000000000000000000aa"_address);
     EXPECT_EQ(call_msg.value.bytes[31], 0);
 }
 
 TEST_P(evm, call_new_account_creation_cost)
 {
-    constexpr auto call_dst = 0x00000000000000000000000000000000000000ad_address;
-    constexpr auto msg_dst = 0x0000000000000000000000000000000000000003_address;
+    constexpr auto call_dst = "Z00000000000000000000000000000000000000ad"_address;
+    constexpr auto msg_dst = "Z0000000000000000000000000000000000000003"_address;
     const auto code =
         4 * push(0) + calldataload(0) + push(call_dst) + push(0) + OP_CALL + ret_top();
     msg.recipient = msg_dst;
@@ -468,7 +467,7 @@ TEST_P(evm, staticcall_input)
 TEST_P(evm, call_with_value_low_gas)
 {
     // Create the call destination account.
-    host.accounts[0x0000000000000000000000000000000000000000_address] = {};
+    host.accounts["Z0000000000000000000000000000000000000000"_address] = {};
     for (auto call_op : {OP_CALL})
     {
         auto code = 4 * push(0) + push(1) + 2 * push(0) + call_op + OP_POP;
@@ -482,7 +481,7 @@ TEST_P(evm, call_with_value_low_gas)
 TEST_P(evm, call_oog_after_depth_check)
 {
     // Create the call recipient account.
-    host.accounts[0x0000000000000000000000000000000000000000_address] = {};
+    host.accounts["Z0000000000000000000000000000000000000000"_address] = {};
     msg.depth = 1024;
 
     for (auto op : {OP_CALL, OP_CALLCODE})
@@ -504,9 +503,9 @@ TEST_P(evm, call_oog_after_depth_check)
 
 TEST_P(evm, call_recipient_and_code_address)
 {
-    constexpr auto origin = 0x9900000000000000000000000000000000000099_address;
-    constexpr auto executor = 0xee000000000000000000000000000000000000ee_address;
-    constexpr auto recipient = 0x4400000000000000000000000000000000000044_address;
+    constexpr auto origin = "Z9900000000000000000000000000000000000099"_address;
+    constexpr auto executor = "Zee000000000000000000000000000000000000ee"_address;
+    constexpr auto recipient = "Z4400000000000000000000000000000000000044"_address;
 
     msg.sender = origin;
     msg.recipient = executor;
@@ -527,9 +526,9 @@ TEST_P(evm, call_recipient_and_code_address)
 
 TEST_P(evm, call_value)
 {
-    constexpr auto origin = 0x9900000000000000000000000000000000000099_address;
-    constexpr auto executor = 0xee000000000000000000000000000000000000ee_address;
-    constexpr auto recipient = 0x4400000000000000000000000000000000000044_address;
+    constexpr auto origin = "Z9900000000000000000000000000000000000099"_address;
+    constexpr auto executor = "Zee000000000000000000000000000000000000ee"_address;
+    constexpr auto recipient = "Z4400000000000000000000000000000000000044"_address;
 
     constexpr auto passed_value = 3;
     constexpr auto origin_value = 8;
@@ -685,7 +684,7 @@ TEST_P(evm, call_gas_refund_aggregation_different_calls)
     host.call_result.status_code = EVMC_SUCCESS;
     host.call_result.gas_refund = 1;
 
-    const auto a = 0xaa_address;
+    const auto a = "Zaa"_address;
     const auto code = call(a) + delegatecall(a) + staticcall(a) + create() + create2();
     execute(code);
     EXPECT_STATUS(EVMC_SUCCESS);

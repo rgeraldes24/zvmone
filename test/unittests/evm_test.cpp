@@ -176,31 +176,30 @@ TEST_P(evm, arith)
     EXPECT_EQ(result.output_data[0], 1);
 }
 
-// TODO(rgeraldes24): fix
-// TEST_P(evm, comparison)
-// {
-//     bytecode s;
-//     s += "60006001808203808001";  // 0 1 -1 -2
-//     s += "828210600053";          // m[0] = -1 < 1
-//     s += "828211600153";          // m[1] = -1 > 1
-//     s += "828212600253";          // m[2] = -1 s< 1
-//     s += "828213600353";          // m[3] = -1 s> 1
-//     s += "828214600453";          // m[4] = -1 == 1
-//     s += "818112600553";          // m[5] = -2 s< -1
-//     s += "818113600653";          // m[6] = -2 s> -1
-//     s += "60076000f3";
-//     execute(s);
-//     EXPECT_EQ(result.status_code, EVMC_SUCCESS);
-//     EXPECT_EQ(gas_used, 138);
-//     ASSERT_EQ(result.output_size, 7);
-//     EXPECT_EQ(result.output_data[0], 0);
-//     EXPECT_EQ(result.output_data[1], 1);
-//     EXPECT_EQ(result.output_data[2], 1);
-//     EXPECT_EQ(result.output_data[3], 0);
-//     EXPECT_EQ(result.output_data[4], 0);
-//     EXPECT_EQ(result.output_data[5], 1);
-//     EXPECT_EQ(result.output_data[6], 0);
-// }
+TEST_P(evm, comparison)
+{
+    bytecode s;
+    s += "60006001808203808001";  // 0 1 -1 -2
+    s += "828210600053";          // m[0] = -1 < 1
+    s += "828211600153";          // m[1] = -1 > 1
+    s += "828212600253";          // m[2] = -1 s< 1
+    s += "828213600353";          // m[3] = -1 s> 1
+    s += "828214600453";          // m[4] = -1 == 1
+    s += "818112600553";          // m[5] = -2 s< -1
+    s += "818113600653";          // m[6] = -2 s> -1
+    s += "60076000f3";
+    execute(s);
+    EXPECT_EQ(result.status_code, EVMC_SUCCESS);
+    EXPECT_EQ(gas_used, 138);
+    ASSERT_EQ(result.output_size, 7);
+    EXPECT_EQ(result.output_data[0], 0);
+    EXPECT_EQ(result.output_data[1], 1);
+    EXPECT_EQ(result.output_data[2], 1);
+    EXPECT_EQ(result.output_data[3], 0);
+    EXPECT_EQ(result.output_data[4], 0);
+    EXPECT_EQ(result.output_data[5], 1);
+    EXPECT_EQ(result.output_data[6], 0);
+}
 
 TEST_P(evm, bitwise)
 {

@@ -253,7 +253,7 @@ evmc::Result Host::call(const evmc_message& orig_msg) noexcept
 
     if (result.status_code != EVMC_SUCCESS)
     {
-        static constexpr auto addr_03 = 0x03_address;
+        static constexpr auto addr_03 = "Z03"_address;
         auto* const acc_03 = m_state.find(addr_03);
         const auto is_03_touched = acc_03 != nullptr && acc_03->erasable;
 
@@ -309,7 +309,7 @@ evmc_access_status Host::access_account(const address& addr) noexcept
     const auto status = std::exchange(acc.access_status, EVMC_ACCESS_WARM);
 
     // Overwrite status for precompiled contracts: they are always warm.
-    if (status == EVMC_ACCESS_COLD && addr >= 0x01_address && addr <= 0x09_address)
+    if (status == EVMC_ACCESS_COLD && addr >= "Z01"_address && addr <= "Z09"_address)
         return EVMC_ACCESS_WARM;
 
     return status;

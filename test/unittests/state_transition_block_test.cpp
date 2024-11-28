@@ -9,7 +9,7 @@ using namespace evmone::test;
 
 TEST_F(state_transition, block_apply_withdrawal)
 {
-    static constexpr auto withdrawal_address = 0x8888_address;
+    static constexpr auto withdrawal_address = "Z8888"_address;
 
     block.withdrawals = {{withdrawal_address, 3}};
     tx.to = To;

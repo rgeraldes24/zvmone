@@ -10,7 +10,7 @@ using namespace evmone::test;
 
 TEST_F(state_transition, create2_factory)
 {
-    static constexpr auto create_address = 0xfd8e7707356349027a32d71eabc7cb0cf9d7cbb4_address;
+    static constexpr auto create_address = "Zfd8e7707356349027a32d71eabc7cb0cf9d7cbb4"_address;
 
     const auto factory_code =
         calldatacopy(0, 0, calldatasize()) + create2().input(0, calldatasize());
@@ -26,7 +26,7 @@ TEST_F(state_transition, create2_factory)
 
 TEST_F(state_transition, create_tx)
 {
-    static constexpr auto create_address = 0x3442a1dec1e72f337007125aa67221498cdd759d_address;
+    static constexpr auto create_address = "Z3442a1dec1e72f337007125aa67221498cdd759d"_address;
 
     tx.data = mstore8(0, push(0xFE)) + ret(0, 1);
 

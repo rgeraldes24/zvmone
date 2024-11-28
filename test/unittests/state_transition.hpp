@@ -23,12 +23,12 @@ class state_transition : public testing::Test
 protected:
     /// The default sender address of the test transaction.
     /// Private key: 0x2b1263d2b.
-    static constexpr auto Sender = 0xe100713FC15400D1e94096a545879E7c6407001e_address;
+    static constexpr auto Sender = "Ze100713FC15400D1e94096a545879E7c6407001e"_address;
 
     /// The default destination address of the test transaction.
-    static constexpr auto To = 0xc0de_address;
+    static constexpr auto To = "Zc0de"_address;
 
-    static constexpr auto Coinbase = 0xc014bace_address;
+    static constexpr auto Coinbase = "Zc014bace"_address;
 
     static inline evmc::VM vm{evmc_create_evmone()};
 

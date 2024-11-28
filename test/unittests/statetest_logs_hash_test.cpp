@@ -19,8 +19,8 @@ TEST(statetest_logs_hash, empty_logs)
 TEST(statetest_logs_hash, example1)
 {
     const std::vector<state::Log> logs{
-        state::Log{0x00_address, bytes{0xb0, 0xb1}, {}},
-        state::Log{0xaa_address, {}, {0x01_bytes32, 0x02_bytes32}},
+        state::Log{"Z00"_address, bytes{0xb0, 0xb1}, {}},
+        state::Log{"Zaa"_address, {}, {0x01_bytes32, 0x02_bytes32}},
     };
 
     EXPECT_EQ(test::logs_hash(logs),

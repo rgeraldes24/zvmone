@@ -29,7 +29,7 @@ TEST(state_mpt_hash, single_account_v1)
 
     Account acc;
     acc.balance = 1_u256;
-    const std::unordered_map<address, Account> accounts{{0x02_address, acc}};
+    const std::unordered_map<address, Account> accounts{{"Z02"_address, acc}};
     EXPECT_EQ(mpt_hash(accounts), expected);
 }
 
@@ -38,7 +38,7 @@ TEST(state_mpt_hash, two_accounts)
     std::unordered_map<address, Account> accounts;
     EXPECT_EQ(mpt_hash(accounts), emptyMPTHash);
 
-    accounts[0x00_address] = Account{};
+    accounts["Z00"_address] = Account{};
     EXPECT_EQ(mpt_hash(accounts),
         0x0ce23f3c809de377b008a4a3ee94a0834aac8bec1f86e28ffe4fdb5a15b0c785_bytes32);
 
@@ -48,7 +48,7 @@ TEST(state_mpt_hash, two_accounts)
     acc2.code = {0x00};
     acc2.storage[0x01_bytes32] = {0xfe_bytes32};
     acc2.storage[0x02_bytes32] = {0xfd_bytes32};
-    accounts[0x01_address] = acc2;
+    accounts["Z01"_address] = acc2;
     EXPECT_EQ(mpt_hash(accounts),
         0xd3e845156fca75de99712281581304fbde104c0fc5a102b09288c07cdde0b666_bytes32);
 }
@@ -59,7 +59,7 @@ TEST(state_mpt_hash, deleted_storage)
     acc.storage[0x01_bytes32] = {};
     acc.storage[0x02_bytes32] = {0xfd_bytes32};
     acc.storage[0x03_bytes32] = {};
-    const std::unordered_map<address, Account> accounts{{0x07_address, acc}};
+    const std::unordered_map<address, Account> accounts{{"Z07"_address, acc}};
     EXPECT_EQ(mpt_hash(accounts),
         0x4e7338c16731491e0fb5d1623f5265c17699c970c816bab71d4d717f6071414d_bytes32);
 }
@@ -95,8 +95,8 @@ TEST(state_mpt_hash, one_transactions)
     tx.gas_limit = 387780;
     tx.max_gas_price = 1500000014;
     tx.max_priority_gas_price = 1500000000;
-    tx.sender = 0x204cc644e26bdf879db422658edee62e302c3da8_address;
-    tx.to = 0xacd9a09eb3123602937cb30ff717e746c57a5132_address;
+    tx.sender = "Z204cc644e26bdf879db422658edee62e302c3da8"_address;
+    tx.to = "Zacd9a09eb3123602937cb30ff717e746c57a5132"_address;
     tx.value = 0;
     tx.nonce = 10246;
     tx.public_key =
@@ -117,14 +117,14 @@ TEST(state_mpt_hash, eip1559_receipt_three_logs_no_logs)
     receipt0.gas_used = 0x24522;
 
     Log l0;
-    l0.addr = 0x84bf5c35c54a994c72ff9d8b4cca8f5034153a2c_address;
+    l0.addr = "Z84bf5c35c54a994c72ff9d8b4cca8f5034153a2c"_address;
     l0.data = "0x0000000000000000000000000000000000000000000000000000000063ee2f6c"_hex;
     l0.topics = {0x0109fc6f55cf40689f02fbaad7af7fe7bbac8a3d2186600afc7d3e10cac60271_bytes32,
         0x00000000000000000000000000000000000000000000000000000000000027b6_bytes32,
         0x00000000000000000000000038dc84830b92d171d7b4c129c813360d6ab8b54e_bytes32};
 
     Log l1;
-    l1.addr = 0x84bf5c35c54a994c72ff9d8b4cca8f5034153a2c_address;
+    l1.addr = "Z84bf5c35c54a994c72ff9d8b4cca8f5034153a2c"_address;
     l1.data = ""_b;
     l1.topics = {
         0x92e98423f8adac6e64d0608e519fd1cefb861498385c6dee70d58fc926ddc68c_bytes32,
@@ -134,7 +134,7 @@ TEST(state_mpt_hash, eip1559_receipt_three_logs_no_logs)
     };
 
     Log l2;
-    l2.addr = 0x84bf5c35c54a994c72ff9d8b4cca8f5034153a2c_address;
+    l2.addr = "Z84bf5c35c54a994c72ff9d8b4cca8f5034153a2c"_address;
     l2.data = ""_b;
     l2.topics = {0xfe25c73e3b9089fac37d55c4c7efcba6f04af04cebd2fc4d6d7dbb07e1e5234f_bytes32,
         0x000000000000000000000000000000000000000000000c958b4bca4282ac0000_bytes32};

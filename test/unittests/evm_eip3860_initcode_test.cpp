@@ -14,7 +14,7 @@ inline constexpr size_t initcode_size_limit = 0xc000;
 
 TEST_P(evm, create_initcode_limit)
 {
-    host.call_result.create_address = 0x02_address;
+    host.call_result.create_address = "Z02"_address;
     for (const auto& c : {create().input(0, calldataload(0)) + ret_top(),
              create2().input(0, calldataload(0)) + ret_top()})
     {
