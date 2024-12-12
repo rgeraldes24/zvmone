@@ -1,4 +1,4 @@
-// evmone: Fast Ethereum Virtual Machine implementation
+// zvmone: Fast Zond Virtual Machine implementation
 // Copyright 2021 The evmone Authors.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -11,7 +11,7 @@
 #include <utility>
 #include <vector>
 
-namespace evmone::rlp
+namespace zvmone::rlp
 {
 using bytes = std::basic_string<uint8_t>;
 using bytes_view = std::basic_string_view<uint8_t>;
@@ -119,4 +119,4 @@ inline bytes internal::encode_container(InputIterator begin, InputIterator end)
         content += encode(*it);
     return wrap_list(content);
 }
-}  // namespace evmone::rlp
+}  // namespace zvmone::rlp

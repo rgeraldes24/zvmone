@@ -1,13 +1,13 @@
-# evmone: Fast Ethereum Virtual Machine implementation
-# Copyright 2021 The evmone Authors.
+# zvmone: Fast Zond Virtual Machine implementation
+# Copyright 2021 The zvmone Authors.
 # SPDX-License-Identifier: Apache-2.0
 
 set(PREFIX ${PROJECT_NAME}/integration)
 
-get_target_property(EVMONE_LIB_TYPE evmone TYPE)
-if(EVMONE_LIB_TYPE STREQUAL SHARED_LIBRARY)
+get_target_property(ZVMONE_LIB_TYPE zvmone TYPE)
+if(ZVMONE_LIB_TYPE STREQUAL SHARED_LIBRARY)
 
-    add_test(NAME ${PREFIX}/histogram COMMAND $<TARGET_FILE:evmc::tool> --vm $<TARGET_FILE:evmone>,histogram run 6000808080800101010200)
+    add_test(NAME ${PREFIX}/histogram COMMAND $<TARGET_FILE:zvmc::tool> --vm $<TARGET_FILE:zvmone>,histogram run 6000808080800101010200)
     set_tests_properties(
         ${PREFIX}/histogram PROPERTIES PASS_REGULAR_EXPRESSION
         "--- # HISTOGRAM depth=0
@@ -19,7 +19,7 @@ PUSH1,1
 DUP1,4
 ")
 
-    add_test(NAME ${PREFIX}/trace COMMAND $<TARGET_FILE:evmc::tool> --vm $<TARGET_FILE:evmone>,trace run 60006002800103)
+    add_test(NAME ${PREFIX}/trace COMMAND $<TARGET_FILE:zvmc::tool> --vm $<TARGET_FILE:zvmone>,trace run 60006002800103)
     set_tests_properties(
         ${PREFIX}/trace PROPERTIES PASS_REGULAR_EXPRESSION
         "{\"depth\":0,\"rev\":\"Shanghai\",\"static\":false}

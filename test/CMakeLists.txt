@@ -1,11 +1,11 @@
-# evmone: Fast Ethereum Virtual Machine implementation
+# zvmone: Fast Zond Virtual Machine implementation
 # Copyright 2019-2020 The evmone Authors.
 # SPDX-License-Identifier: Apache-2.0
 
 include(GoogleTest)
-include(${PROJECT_SOURCE_DIR}/evmc/cmake/EVMC.cmake)
+include(${PROJECT_SOURCE_DIR}/zvmc/cmake/ZVMC.cmake)
 
-set(evmone_private_include_dir ${PROJECT_SOURCE_DIR}/lib)
+set(zvmone_private_include_dir ${PROJECT_SOURCE_DIR}/lib)
 
 hunter_add_package(GTest)
 find_package(GTest CONFIG REQUIRED)
@@ -22,11 +22,11 @@ add_subdirectory(statetest)
 add_subdirectory(t8n)
 add_subdirectory(unittests)
 
-set(targets evmone-bench evmone-bench-internal evmone-state evmone-statetest evmone-t8n evmone-unittests)
+set(targets zvmone-bench zvmone-bench-internal zvmone-state zvmone-statetest zvmone-t8n zvmone-unittests)
 
-if(EVMONE_FUZZING)
+if(ZVMONE_FUZZING)
     add_subdirectory(fuzzer)
-    list(APPEND targets evmone-fuzzer)
+    list(APPEND targets zvmone-fuzzer)
 endif()
 
 set_target_properties(
@@ -36,11 +36,11 @@ set_target_properties(
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}
 )
 
-get_target_property(type evmone TYPE)
+get_target_property(type zvmone TYPE)
 if(type STREQUAL SHARED_LIBRARY)
-    evmc_add_vm_test(NAME ${PROJECT_NAME}/evmc-vmtester TARGET evmone)
+    zvmc_add_vm_test(NAME ${PROJECT_NAME}/zvmc-vmtester TARGET zvmone)
 
-    if(TARGET evm-test)
-        add_test(NAME ${PROJECT_NAME}/evm-test COMMAND evm-test $<TARGET_FILE:evmone>)
+    if(TARGET zvm-test)
+        add_test(NAME ${PROJECT_NAME}/zvm-test COMMAND zvm-test $<TARGET_FILE:zvmone>)
     endif()
 endif()

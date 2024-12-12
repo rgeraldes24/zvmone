@@ -1,4 +1,4 @@
-// evmone: Fast Ethereum Virtual Machine implementation
+// zvmone: Fast Zond Virtual Machine implementation
 // Copyright 2022 The evmone Authors.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -12,18 +12,18 @@
 #include <test/state/state.hpp>
 #include <array>
 
-using namespace evmone;
-using namespace evmone::state;
+using namespace zvmone;
+using namespace zvmone::state;
 using namespace intx;
 
 TEST(state_mpt_hash, empty)
 {
-    EXPECT_EQ(mpt_hash(std::unordered_map<evmone::address, Account>()), emptyMPTHash);
+    EXPECT_EQ(mpt_hash(std::unordered_map<zvmone::address, Account>()), emptyMPTHash);
 }
 
 TEST(state_mpt_hash, single_account_v1)
 {
-    // Expected value computed in go-ethereum.
+    // Expected value computed in go-zond.
     constexpr auto expected =
         0x084f337237951e425716a04fb0aaa74111eda9d9c61767f2497697d0a201c92e_bytes32;
 
@@ -112,8 +112,8 @@ TEST(state_mpt_hash, one_transactions)
 TEST(state_mpt_hash, eip1559_receipt_three_logs_no_logs)
 {
     TransactionReceipt receipt0{};
-    receipt0.kind = evmone::state::Transaction::Kind::eip1559;
-    receipt0.status = EVMC_SUCCESS;
+    receipt0.kind = zvmone::state::Transaction::Kind::eip1559;
+    receipt0.status = ZVMC_SUCCESS;
     receipt0.gas_used = 0x24522;
 
     Log l0;
@@ -143,8 +143,8 @@ TEST(state_mpt_hash, eip1559_receipt_three_logs_no_logs)
     receipt0.logs_bloom_filter = compute_bloom_filter(receipt0.logs);
 
     TransactionReceipt receipt1{};
-    receipt1.kind = evmone::state::Transaction::Kind::eip1559;
-    receipt1.status = EVMC_SUCCESS;
+    receipt1.kind = zvmone::state::Transaction::Kind::eip1559;
+    receipt1.status = ZVMC_SUCCESS;
     receipt1.gas_used = 0x2cd9b;
     receipt1.logs_bloom_filter = compute_bloom_filter(receipt1.logs);
 

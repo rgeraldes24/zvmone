@@ -1,4 +1,4 @@
-# evmone
+# zvmone
 
 [![ethereum badge]][ethereum]
 [![readme style standard badge]][standard readme]
@@ -7,16 +7,16 @@
 [![appveyor badge]][appveyor]
 [![license badge]][Apache License, Version 2.0]
 
-> Fast Ethereum Virtual Machine implementation
+> Fast Zond Virtual Machine implementation
 
-_evmone_ is a C++ implementation of the Ethereum Virtual Machine (EVM). 
-Created by members of the [Ipsilon] (ex-[Ewasm]) team, the project aims for clean, standalone EVM implementation 
-that can be imported as an execution module by Ethereum Client projects. 
-The codebase of _evmone_ is optimized to provide fast and efficient execution of EVM smart contracts.
+_zvmone_ is a C++ implementation of the Zond Virtual Machine (ZVM). 
+Created by members of the [Ipsilon] (ex-[Ewasm]) team, the project aims for clean, standalone ZVM implementation 
+that can be imported as an execution module by Zond Client projects. 
+The codebase of _zvmone_ is optimized to provide fast and efficient execution of ZVM smart contracts.
 
-### Characteristic of evmone
+### Characteristic of zvmone
 
-1. Exposes the [EVMC] API.
+1. Exposes the [ZVMC] API.
 2. Requires C++20 standard.
 3. The [intx] library is used to provide 256-bit integer precision.
 4. The [ethash] library is used to provide Keccak hash function implementation
@@ -27,13 +27,13 @@ The codebase of _evmone_ is optimized to provide fast and efficient execution of
 
 ### Baseline Interpreter
 
-1. Provides relatively straight-forward but efficient EVM implementation.
+1. Provides relatively straight-forward but efficient ZVM implementation.
 2. Performs only minimalistic `JUMPDEST` analysis.
 
 ### Advanced Interpreter
 
 1. The _indirect call threading_ is the dispatch method used -
-   a loaded EVM program is a table with pointers to functions implementing virtual instructions.
+   a loaded ZVM program is a table with pointers to functions implementing virtual instructions.
 2. The gas cost and stack requirements of block of instructions is precomputed 
    and applied once per block during execution.
 3. Performs extensive and expensive bytecode analysis before execution.
@@ -41,40 +41,40 @@ The codebase of _evmone_ is optimized to provide fast and efficient execution of
 
 ## Usage
 
-### As geth plugin
+### As gzond plugin
 
-evmone implements the [EVMC] API for Ethereum Virtual Machines.
-It can be used as a plugin replacing geth's internal EVM. But for that a modified
-version of geth is needed. The [Ewasm]'s fork
-of go-ethereum provides [binary releases of geth with EVMC support](https://github.com/ewasm/go-ethereum/releases).
+zvmone implements the [ZVMC] API for Zond Virtual Machines.
+It can be used as a plugin replacing gzond's internal ZVM. But for that a modified
+version of gzond is needed. The [Ewasm]'s fork
+of go-zond provides [binary releases of gzond with ZVMC support](https://github.com/ewasm/go-ethereum/releases).
 
-Next, download evmone from [Releases].
+Next, download zvmone from [Releases].
 
-Start the downloaded geth with `--vm.evm` option pointing to the evmone shared library.
+Start the downloaded gzond with `--vm.zvm` option pointing to the zvmone shared library.
 
 ```bash
-geth --vm.evm=./libevmone.so
+gzond --vm.zvm=./libzvmone.so
 ```
 
 ### Building from source
 
-To build the evmone EVMC module (shared library), test, and benchmark:
+To build the zvmone ZVMC module (shared library), test, and benchmark:
 
 1. Fetch the source code:
    ```
-   git clone --recursive https://github.com/ethereum/evmone
-   cd evmone
+   git clone --recursive https://github.com/theqrl/zvmone
+   cd zvmone
    ```
 
 2. Configure the project build and dependencies:
    ##### Linux / OSX
    ```
-   cmake -S . -B build -DEVMONE_TESTING=ON
+   cmake -S . -B build -DZVMONE_TESTING=ON
    ```
 
    ##### Windows
    ```
-   cmake -S . -B build -DEVMONE_TESTING=ON -G "Visual Studio 16 2019" -A x64
+   cmake -S . -B build -DZVMONE_TESTING=ON -G "Visual Studio 16 2019" -A x64
    ```
    
 3. Build:
@@ -85,38 +85,38 @@ To build the evmone EVMC module (shared library), test, and benchmark:
 
 3. Run the unit tests or benchmarking tool:
    ```
-   build/bin/evmone-unittests
-   build/bin/evmone-bench test/evm-benchmarks/benchmarks
+   build/bin/zvmone-unittests
+   build/bin/zvmone-bench test/zvm-benchmarks/benchmarks
    ```
 
 ### Tools
 
-#### evm-test
+#### zvm-test
 
-The **evm-test** executes a collection of unit tests on 
-any EVMC-compatible Ethereum Virtual Machine implementation.
-The collection of tests comes from the evmone project.
+The **zvm-test** executes a collection of unit tests on 
+any ZVMC-compatible Zond Virtual Machine implementation.
+The collection of tests comes from the zvmone project.
 
 ```bash
-evm-test ./evmone.so
+zvm-test ./zvmone.so
 ```
 
 ### Docker
 
-Docker images with evmone are available on Docker Hub:
-https://hub.docker.com/r/ethereum/evmone.
+Docker images with zvmone are available on Docker Hub:
+https://hub.docker.com/r/ethereum/zvmone.
 
-Having the evmone shared library inside a docker is not very useful on its own,
+Having the zvmone shared library inside a docker is not very useful on its own,
 but the image can be used as the base of another one or you can run benchmarks 
 with it.
 
 ```bash
-docker run --entrypoint evmone-bench ethereum/evmone /src/test/benchmarks
+docker run --entrypoint zvmone-bench ethereum/zvmone /src/test/benchmarks
 ```
 
 ## References
 
-1. [Efficient gas calculation algorithm for EVM](docs/efficient_gas_calculation_algorithm.md)
+1. [Efficient gas calculation algorithm for ZVM](docs/efficient_gas_calculation_algorithm.md)
 
 ## Maintainer
 
@@ -135,7 +135,7 @@ Licensed under the [Apache License, Version 2.0].
 [codecov]: https://codecov.io/gh/ethereum/evmone/
 [Apache License, Version 2.0]: LICENSE
 [ethereum]: https://ethereum.org
-[EVMC]: https://github.com/ethereum/evmc
+[ZVMC]: https://github.com/ethereum/evmc
 [Ipsilon]: https://github.com/ipsilon
 [Ewasm]: https://github.com/ewasm
 [intx]: https://github.com/chfast/intx

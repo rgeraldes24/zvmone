@@ -1,22 +1,22 @@
-// evmone: Fast Ethereum Virtual Machine implementation
+// zvmone: Fast Zond Virtual Machine implementation
 // Copyright 2019 The evmone Authors.
 // SPDX-License-Identifier: Apache-2.0
 
-#include <evmone/advanced_analysis.hpp>
-#include <evmone/instructions_traits.hpp>
 #include <gtest/gtest.h>
 #include <test/utils/bytecode.hpp>
+#include <zvmone/advanced_analysis.hpp>
+#include <zvmone/instructions_traits.hpp>
 
 namespace
 {
-// Temporarily include EVMC instructions in an inline namespace so that evmc_opcode enum
-// doesn't name clash with evmone::Opcode but the evmc_ functions are accessible.
-#include <evmc/instructions.h>
+// Temporarily include ZVMC instructions in an inline namespace so that zvmc_opcode enum
+// doesn't name clash with zvmone::Opcode but the zvmc_ functions are accessible.
+#include <zvmc/instructions.h>
 }  // namespace
 
-using namespace evmone;
+using namespace zvmone;
 
-namespace evmone::test
+namespace zvmone::test
 {
 namespace
 {
@@ -24,7 +24,7 @@ constexpr int unspecified = -1000000;
 
 constexpr int get_revision_defined_in(size_t op) noexcept
 {
-    for (size_t r = EVMC_SHANGHAI; r <= EVMC_MAX_REVISION; ++r)
+    for (size_t r = ZVMC_SHANGHAI; r <= ZVMC_MAX_REVISION; ++r)
     {
         if (instr::gas_costs[r][op] != instr::undefined)
             return static_cast<int>(r);
@@ -82,22 +82,22 @@ static_assert(instr::has_const_gas_cost(OP_ADD));
 static_assert(instr::has_const_gas_cost(OP_PUSH1));
 }  // namespace
 
-}  // namespace evmone::test
+}  // namespace zvmone::test
 
-TEST(instructions, compare_with_evmc_instruction_tables)
+TEST(instructions, compare_with_zvmc_instruction_tables)
 {
-    for (int r = EVMC_SHANGHAI; r <= EVMC_MAX_REVISION; ++r)
+    for (int r = ZVMC_SHANGHAI; r <= ZVMC_MAX_REVISION; ++r)
     {
-        const auto rev = static_cast<evmc_revision>(r);
+        const auto rev = static_cast<zvmc_revision>(r);
         const auto& instr_tbl = instr::gas_costs[rev];
-        const auto& evmone_tbl = advanced::get_op_table(rev);
-        const auto* evmc_tbl = evmc_get_instruction_metrics_table(rev);
+        const auto& zvmone_tbl = advanced::get_op_table(rev);
+        const auto* zvmc_tbl = zvmc_get_instruction_metrics_table(rev);
 
-        for (size_t i = 0; i < evmone_tbl.size(); ++i)
+        for (size_t i = 0; i < zvmone_tbl.size(); ++i)
         {
             const auto gas_cost = (instr_tbl[i] != instr::undefined) ? instr_tbl[i] : 0;
-            const auto& metrics = evmone_tbl[i];
-            const auto& ref_metrics = evmc_tbl[i];
+            const auto& metrics = zvmone_tbl[i];
+            const auto& ref_metrics = zvmc_tbl[i];
 
             const auto case_descr = [rev](size_t opcode) {
                 auto case_descr_str = std::ostringstream{};
@@ -116,24 +116,24 @@ TEST(instructions, compare_with_evmc_instruction_tables)
 
 TEST(instructions, compare_undefined_instructions)
 {
-    for (int r = EVMC_SHANGHAI; r <= EVMC_MAX_REVISION; ++r)
+    for (int r = ZVMC_SHANGHAI; r <= ZVMC_MAX_REVISION; ++r)
     {
-        const auto rev = static_cast<evmc_revision>(r);
+        const auto rev = static_cast<zvmc_revision>(r);
         const auto& instr_tbl = instr::gas_costs[rev];
-        const auto* evmc_names_tbl = evmc_get_instruction_names_table(rev);
+        const auto* zvmc_names_tbl = zvmc_get_instruction_names_table(rev);
 
         for (size_t i = 0; i < instr_tbl.size(); ++i)
         {
-            EXPECT_EQ(instr_tbl[i] == instr::undefined, evmc_names_tbl[i] == nullptr) << i;
+            EXPECT_EQ(instr_tbl[i] == instr::undefined, zvmc_names_tbl[i] == nullptr) << i;
         }
     }
 }
 
-TEST(instructions, compare_with_evmc_instruction_names)
+TEST(instructions, compare_with_zvmc_instruction_names)
 {
-    const auto* evmc_tbl = evmc_get_instruction_names_table(EVMC_MAX_REVISION);
+    const auto* zvmc_tbl = zvmc_get_instruction_names_table(ZVMC_MAX_REVISION);
     for (size_t i = 0; i < instr::traits.size(); ++i)
     {
-        EXPECT_STREQ(instr::traits[i].name, evmc_tbl[i]);
+        EXPECT_STREQ(instr::traits[i].name, zvmc_tbl[i]);
     }
 }

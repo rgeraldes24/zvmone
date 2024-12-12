@@ -1,11 +1,11 @@
-// evmone: Fast Ethereum Virtual Machine implementation
+// zvmone: Fast Zond Virtual Machine implementation
 // Copyright 2023 The evmone Authors.
 // SPDX-License-Identifier: Apache-2.0
 
 #include "bloom_filter.hpp"
 #include "state.hpp"
 
-namespace evmone::state
+namespace zvmone::state
 {
 
 namespace
@@ -54,4 +54,4 @@ BloomFilter compute_bloom_filter(std::span<const TransactionReceipt> receipts) n
     return res;
 }
 
-}  // namespace evmone::state
+}  // namespace zvmone::state

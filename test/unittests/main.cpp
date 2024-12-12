@@ -1,25 +1,25 @@
-// evmone: Fast Ethereum Virtual Machine implementation
+// zvmone: Fast Zond Virtual Machine implementation
 // Copyright 2019 The evmone Authors.
 // SPDX-License-Identifier: Apache-2.0
 
 #include "vm_loader.hpp"
-#include <evmc/loader.h>
 #include <gtest/gtest.h>
+#include <zvmc/loader.h>
 #include <iostream>
 #include <string>
 #include <vector>
 
-/// The loaded EVMC module.
-static evmc::VM evmc_module;
+/// The loaded ZVMC module.
+static zvmc::VM zvmc_module;
 
-evmc::VM& get_vm() noexcept
+zvmc::VM& get_vm() noexcept
 {
-    return evmc_module;
+    return zvmc_module;
 }
 
 /// Simple and copy&paste distributable CLI parser.
 ///
-/// TODO: Originally taken from EVMC and modified here. Copy it back.
+/// TODO: Originally taken from ZVMC and modified here. Copy it back.
 class cli_parser
 {
 public:
@@ -144,31 +144,31 @@ int main(int argc, char* argv[])
 {
     try
     {
-        auto cli = cli_parser{"EVM Test", PROJECT_VERSION,
-            "Testing tool for EVMC-compatible Ethereum Virtual Machine implementations.\n"
-            "Powered by the evmone project.\n\n"
-            "EVMC:   https://github.com/ethereum/evmc\n"
-            "evmone: https://github.com/ethereum/evmone",
+        auto cli = cli_parser{"ZVM Test", PROJECT_VERSION,
+            "Testing tool for ZVMC-compatible Zond Virtual Machine implementations.\n"
+            "Powered by the zvmone project.\n\n"
+            "ZVMC:   https://github.com/theqrl/zvmc\n"
+            "zvmone: https://github.com/theqrl/zvmone",
             {"MODULE"}};
         cli.set_preprocessor(testing::InitGoogleTest);
 
         if (const auto error_code = cli.parse(argc, argv, std::cout, std::cerr); error_code <= 0)
             return error_code;
 
-        const auto& evmc_config = cli.arguments[0];
-        evmc_loader_error_code ec;
-        evmc_module = evmc::VM{evmc_load_and_configure(evmc_config.c_str(), &ec)};
+        const auto& zvmc_config = cli.arguments[0];
+        zvmc_loader_error_code ec;
+        zvmc_module = zvmc::VM{zvmc_load_and_configure(zvmc_config.c_str(), &ec)};
 
-        if (ec != EVMC_LOADER_SUCCESS)
+        if (ec != ZVMC_LOADER_SUCCESS)
         {
-            if (const auto error = evmc_last_error_msg())
-                std::cerr << "EVMC loading error: " << error << "\n";
+            if (const auto error = zvmc_last_error_msg())
+                std::cerr << "ZVMC loading error: " << error << "\n";
             else
-                std::cerr << "EVMC loading error " << ec << "\n";
+                std::cerr << "ZVMC loading error " << ec << "\n";
             return static_cast<int>(ec);
         }
 
-        std::cout << "Testing " << evmc_config << "\n\n";
+        std::cout << "Testing " << zvmc_config << "\n\n";
         return RUN_ALL_TESTS();
     }
     catch (const std::exception& ex)

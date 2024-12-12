@@ -202,7 +202,7 @@ commands:
             if [ "$TOOLCHAIN" ]; then
               export toolchain_option="-DTOOLCHAIN=$TOOLCHAIN"
             fi
-            cmake ../project $toolchain_option -DCMAKE_INSTALL_PREFIX=~/install -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DEVMONE_TESTING=ON $CMAKE_OPTIONS
+            cmake ../project $toolchain_option -DCMAKE_INSTALL_PREFIX=~/install -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DZVMONE_TESTING=ON $CMAKE_OPTIONS
       - save_cache:
          name: "Save Hunter cache"
          key: *hunter-cache-key
@@ -222,7 +222,7 @@ commands:
           name: "Test"
           shell: bash
           working_directory: ~/build
-          command: ctest -R ${TESTS_FILTER:-'.*'} --schedule-random --output-on-failure --parallel $CMAKE_BUILD_PARALLEL_LEVEL --output-junit ~/test_results/evmone.xml
+          command: ctest -R ${TESTS_FILTER:-'.*'} --schedule-random --output-on-failure --parallel $CMAKE_BUILD_PARALLEL_LEVEL --output-junit ~/test_results/zvmone.xml
       - store_test_results:
           path: ~/test_results
 
@@ -258,23 +258,23 @@ commands:
           name: "Build Package"
           shell: bash
           working_directory: ~/package
-          command: cmake --build ~/build --target package && mv ~/build/evmone-*.* .
+          command: cmake --build ~/build --target package && mv ~/build/zvmone-*.* .
       - store_artifacts:
           path: ~/package
           destination: package
       - persist_to_workspace:
           root: ~/package
           paths:
-            - evmone-*
+            - zvmone-*
 
   unpack_package:
     steps:
       - attach_workspace:
           at: ~/package
       - run:
-          name: "Unpack evmone"
+          name: "Unpack zvmone"
           working_directory: ~/package
-          command: tar xz < evmone*.tar.gz
+          command: tar xz < zvmone*.tar.gz
 
 jobs:
 
@@ -303,7 +303,7 @@ jobs:
       #- run:
       #    name: "Export JSON tests"
       #    working_directory: ~/package
-      #    command: tar -C ~/build/test/integration/export -cz fixtures > evmone-tests.tar.gz
+      #    command: tar -C ~/build/test/integration/export -cz fixtures > zvmone-tests.tar.gz
       - package
 
   release-windows:
@@ -326,7 +326,7 @@ jobs:
             $ErrorActionPreference = "Stop"
             & 'C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\Tools\Launch-VsDevShell.ps1' -Arch amd64
             which cmake
-            cmake -S . -B ~/build -G Ninja -DCMAKE_INSTALL_PREFIX=C:\install -DEVMONE_TESTING=ON
+            cmake -S . -B ~/build -G Ninja -DCMAKE_INSTALL_PREFIX=C:\install -DZVMONE_TESTING=ON
       - run:
           name: 'Build'
           shell: powershell
@@ -373,7 +373,7 @@ jobs:
     executor: blockchain-tests
     environment:
       BUILD_TYPE: Coverage
-      CMAKE_OPTIONS: -DEVMONE_TESTING=OFF -DCMAKE_CXX_FLAGS=-Og
+      CMAKE_OPTIONS: -DZVMONE_TESTING=OFF -DCMAKE_CXX_FLAGS=-Og
     steps:
       - build
       - build_silkworm:
@@ -384,12 +384,12 @@ jobs:
           name: "Silkworm-driven blockchain tests (Advanced)"
           working_directory: ~/build
           no_output_timeout: 20m
-          command: ~/silkworm/consensus --evm lib/libevmone.so,advanced --tests ~/tests --threads $CMAKE_BUILD_PARALLEL_LEVEL
+          command: ~/silkworm/consensus --zvm lib/libzvmone.so,advanced --tests ~/tests --threads $CMAKE_BUILD_PARALLEL_LEVEL
       - run:
           name: "Silkworm-driven blockchain tests (Baseline)"
           working_directory: ~/build
           no_output_timeout: 20m
-          command: ~/silkworm/consensus --evm lib/libevmone.so --tests ~/tests --threads $CMAKE_BUILD_PARALLEL_LEVEL
+          command: ~/silkworm/consensus --zvm lib/libzvmone.so --tests ~/tests --threads $CMAKE_BUILD_PARALLEL_LEVEL
       - collect_coverage_gcc
       # - upload_coverage:
       #     flags: blockchaintests
@@ -408,9 +408,9 @@ jobs:
           name: "State tests"
           working_directory: ~/build
           command: |
-            export EVMONE_PRECOMPILES_STUB=~/project/test/state/precompiles_stub.json 
+            export ZVMONE_PRECOMPILES_STUB=~/project/test/state/precompiles_stub.json 
             # TODO(now.youtrack.cloud/issue/TE-7)
-            bin/evmone-statetest ~/tests/GeneralStateTests ~/tests/LegacyTests/Constantinople/GeneralStateTests
+            bin/zvmone-statetest ~/tests/GeneralStateTests ~/tests/LegacyTests/Constantinople/GeneralStateTests
       - collect_coverage_gcc
       # - upload_coverage:
       #     flags: statetests
@@ -424,7 +424,7 @@ jobs:
   clang-min:
     executor: linux-clang-min
     environment:
-      CMAKE_OPTIONS=-DEVMONE_X86_64_ARCH_LEVEL=3
+      CMAKE_OPTIONS=-DZVMONE_X86_64_ARCH_LEVEL=3
     steps:
       - build
       - test
@@ -453,7 +453,7 @@ jobs:
       - run:
           name: "memcheck"
           working_directory: ~/build
-          command: valgrind --vgdb=no --error-exitcode=99 bin/evmone-unittests
+          command: valgrind --vgdb=no --error-exitcode=99 bin/zvmone-unittests
 
   gcc-32bit:
     executor: linux-gcc-multilib
@@ -494,11 +494,11 @@ jobs:
           name: "Coverage report"
           working_directory: ~/build
           command: |
-            ARGS='lib/libevmone.so -Xdemangler llvm-cxxfilt -instr-profile=evmone.profdata -ignore-filename-regex=include/evmc'
+            ARGS='lib/libzvmone.so -Xdemangler llvm-cxxfilt -instr-profile=zvmone.profdata -ignore-filename-regex=include/zvmc'
             SHOW_ARGS='-format=html -show-branches=count -show-regions -show-expansions'
             
             mkdir ~/coverage
-            llvm-profdata merge -sparse *.profraw -o evmone.profdata
+            llvm-profdata merge -sparse *.profraw -o zvmone.profdata
             llvm-cov show $ARGS $SHOW_ARGS > ~/coverage/full.html
             llvm-cov show $ARGS $SHOW_ARGS -region-coverage-lt=100 > ~/coverage/missing.html
 
@@ -511,17 +511,17 @@ jobs:
   fuzzing:
     executor: linux-clang-xlarge
     environment:
-      CMAKE_OPTIONS: -DEVMONE_FUZZING=ON
+      CMAKE_OPTIONS: -DZVMONE_FUZZING=ON
     steps:
       - build
       - restore_cache:
           name: "Restore fuzzing corpus"
           key: fuzzing-corpus
       - run:
-          name: "Run evmone-fuzzer"
+          name: "Run zvmone-fuzzer"
           working_directory: ~/build
           command: |
-            bin/evmone-fuzzer -runs=5000000 -fork=$CMAKE_BUILD_PARALLEL_LEVEL -fork_corpus_groups=1 ~/corpus -create_missing_dirs=1 -max_len=100 -entropic_scale_per_exec_time=1 2>&1 | sed '/NEW_FUNC/d'
+            bin/zvmone-fuzzer -runs=5000000 -fork=$CMAKE_BUILD_PARALLEL_LEVEL -fork_corpus_groups=1 ~/corpus -create_missing_dirs=1 -max_len=100 -entropic_scale_per_exec_time=1 2>&1 | sed '/NEW_FUNC/d'
       - save_cache:
           name: "Save fuzzing corpus"
           key: fuzzing-corpus-{{epoch}}
@@ -566,19 +566,19 @@ jobs:
     steps:
       - build
       - run:
-          name: "Check evmone.so"
+          name: "Check zvmone.so"
           working_directory: ~/build
-          command: (! qemu-x86_64-static bin/evmc run --vm ./lib/libevmone.so,trace 6000 2>&1) | grep "CPU does not support"
+          command: (! qemu-x86_64-static bin/zvmc run --vm ./lib/libzvmone.so,trace 6000 2>&1) | grep "CPU does not support"
       - run:
           name: "Check unittests"
           working_directory: ~/build
-          command: (! qemu-x86_64-static bin/evmone-unittests 2>&1) | grep "CPU does not support"
+          command: (! qemu-x86_64-static bin/zvmone-unittests 2>&1) | grep "CPU does not support"
 
 
 
 workflows:
   version: 2
-  evmone:
+  zvmone:
     jobs:
       - lint
       - clang-tidy

@@ -1,4 +1,4 @@
-[submodule "evmc"]
-	path = evmc
+[submodule "zvmc"]
+	path = zvmc
 	# TODO(now.youtrack.cloud/issue/TE-11)
-	url = https://github.com/rgeraldes24/evmc
+	url = https://github.com/rgeraldes24/zvmc

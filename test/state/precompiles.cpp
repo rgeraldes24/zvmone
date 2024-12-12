@@ -1,4 +1,4 @@
-// evmone: Fast Ethereum Virtual Machine implementation
+// zvmone: Fast Zond Virtual Machine implementation
 // Copyright 2022 The evmone Authors.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -11,9 +11,9 @@
 #include <limits>
 #include <unordered_map>
 
-namespace evmone::state
+namespace zvmone::state
 {
-using namespace evmc::literals;
+using namespace zvmc::literals;
 
 namespace
 {
@@ -36,32 +36,32 @@ inline constexpr int64_t cost_per_input_word(size_t input_size) noexcept
     return BaseCost + WordCost * num_words(input_size);
 }
 
-PrecompileAnalysis depositroot_analyze(bytes_view /*input*/, evmc_revision /*rev*/) noexcept
+PrecompileAnalysis depositroot_analyze(bytes_view /*input*/, zvmc_revision /*rev*/) noexcept
 {
     return {19992, 32};
 }
 
-PrecompileAnalysis sha256_analyze(bytes_view input, evmc_revision /*rev*/) noexcept
+PrecompileAnalysis sha256_analyze(bytes_view input, zvmc_revision /*rev*/) noexcept
 {
     return {cost_per_input_word<60, 12>(input.size()), 32};
 }
 
-PrecompileAnalysis identity_analyze(bytes_view input, evmc_revision /*rev*/) noexcept
+PrecompileAnalysis identity_analyze(bytes_view input, zvmc_revision /*rev*/) noexcept
 {
     return {cost_per_input_word<15, 3>(input.size()), input.size()};
 }
 
-PrecompileAnalysis ecadd_analyze(bytes_view /*input*/, evmc_revision /*rev*/) noexcept
+PrecompileAnalysis ecadd_analyze(bytes_view /*input*/, zvmc_revision /*rev*/) noexcept
 {
     return {150, 64};
 }
 
-PrecompileAnalysis ecmul_analyze(bytes_view /*input*/, evmc_revision /*rev*/) noexcept
+PrecompileAnalysis ecmul_analyze(bytes_view /*input*/, zvmc_revision /*rev*/) noexcept
 {
     return {6000, 64};
 }
 
-PrecompileAnalysis ecpairing_analyze(bytes_view input, evmc_revision /*rev*/) noexcept
+PrecompileAnalysis ecpairing_analyze(bytes_view input, zvmc_revision /*rev*/) noexcept
 {
     const auto base_cost = 45000;
     const auto element_cost = 34000;
@@ -69,7 +69,7 @@ PrecompileAnalysis ecpairing_analyze(bytes_view input, evmc_revision /*rev*/) no
     return {base_cost + num_elements * element_cost, 32};
 }
 
-PrecompileAnalysis expmod_analyze(bytes_view input, evmc_revision /*rev*/) noexcept
+PrecompileAnalysis expmod_analyze(bytes_view input, zvmc_revision /*rev*/) noexcept
 {
     using namespace intx;
 
@@ -125,7 +125,7 @@ ExecutionResult identity_execute(const uint8_t* input, size_t input_size, uint8_
 {
     assert(output_size == input_size);
     std::copy_n(input, input_size, output);
-    return {EVMC_SUCCESS, input_size};
+    return {ZVMC_SUCCESS, input_size};
 }
 
 struct PrecompileTraits
@@ -138,7 +138,7 @@ template <PrecompileId Id>
 ExecutionResult dummy_execute(const uint8_t*, size_t, uint8_t*, size_t) noexcept
 {
     std::cerr << "Precompile " << static_cast<int>(Id) << " not implemented!\n";
-    return ExecutionResult{EVMC_INTERNAL_ERROR, 0};
+    return ExecutionResult{ZVMC_INTERNAL_ERROR, 0};
 }
 
 inline constexpr auto traits = []() noexcept {
@@ -156,13 +156,13 @@ inline constexpr auto traits = []() noexcept {
 }();
 }  // namespace
 
-std::optional<evmc::Result> call_precompile(evmc_revision rev, const evmc_message& msg) noexcept
+std::optional<zvmc::Result> call_precompile(zvmc_revision rev, const zvmc_message& msg) noexcept
 {
     // Define compile-time constant,
     // TODO: workaround for Clang Analyzer bug https://github.com/llvm/llvm-project/issues/59493.
-    static constexpr evmc::address address_boundary{NumPrecompiles};
+    static constexpr zvmc::address address_boundary{NumPrecompiles};
 
-    if (evmc::is_zero(msg.code_address) || msg.code_address >= address_boundary)
+    if (zvmc::is_zero(msg.code_address) || msg.code_address >= address_boundary)
         return {};
 
     const auto id = msg.code_address.bytes[19];
@@ -176,7 +176,7 @@ std::optional<evmc::Result> call_precompile(evmc_revision rev, const evmc_messag
     const auto [gas_cost, max_output_size] = analyze(input, rev);
     const auto gas_left = msg.gas - gas_cost;
     if (gas_left < 0)
-        return evmc::Result{EVMC_OUT_OF_GAS};
+        return zvmc::Result{ZVMC_OUT_OF_GAS};
 
     static Cache cache;
     if (auto r = cache.find(static_cast<PrecompileId>(id), input, gas_left); r.has_value())
@@ -188,11 +188,11 @@ std::optional<evmc::Result> call_precompile(evmc_revision rev, const evmc_messag
     const auto [status_code, output_size] =
         execute(msg.input_data, msg.input_size, output_buf, max_output_size);
 
-    evmc::Result result{
-        status_code, status_code == EVMC_SUCCESS ? gas_left : 0, 0, output_buf, output_size};
+    zvmc::Result result{
+        status_code, status_code == ZVMC_SUCCESS ? gas_left : 0, 0, output_buf, output_size};
 
     cache.insert(static_cast<PrecompileId>(id), input, result);
 
     return result;
 }
-}  // namespace evmone::state
+}  // namespace zvmone::state

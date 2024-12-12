@@ -1,5 +1,5 @@
-// evmone: Fast Ethereum Virtual Machine implementation
-// Copyright 2019 The evmone Authors.
+// zvmone: Fast Zond Virtual Machine implementation
+// Copyright 2019 The zvmone Authors.
 // SPDX-License-Identifier: Apache-2.0
 
 #include <benchmark/benchmark.h>

@@ -1,4 +1,4 @@
-// evmone: Fast Ethereum Virtual Machine implementation
+// zvmone: Fast Zond Virtual Machine implementation
 // Copyright 2022 The evmone Authors.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -6,10 +6,10 @@
 #include "statetest.hpp"
 #include <nlohmann/json.hpp>
 
-namespace evmone::test
+namespace zvmone::test
 {
 namespace json = nlohmann;
-using evmc::from_hex;
+using zvmc::from_hex;
 
 template <>
 uint8_t from_json<uint8_t>(const json::json& j)
@@ -70,7 +70,7 @@ bytes from_json<bytes>(const json::json& j)
 template <>
 address from_json<address>(const json::json& j)
 {
-    return evmc::from_prefixed_hex<address>(j.get<std::string>(), "Z").value();
+    return zvmc::from_prefixed_hex<address>(j.get<std::string>(), "Z").value();
 }
 
 template <>
@@ -81,7 +81,7 @@ hash256 from_json<hash256>(const json::json& j)
     if (j.is_string() && (j == "0" || j == "0x0"))
         return 0x00_bytes32;
     else
-        return evmc::from_hex<hash256>(j.get<std::string>()).value();
+        return zvmc::from_hex<hash256>(j.get<std::string>()).value();
 }
 
 template <>
@@ -149,7 +149,7 @@ inline uint64_t calculate_current_base_fee_eip1559(
 template <>
 state::BlockInfo from_json<state::BlockInfo>(const json::json& j)
 {
-    evmc::bytes32 random;
+    zvmc::bytes32 random;
     if (const auto prev_randao_it = j.find("currentRandom"); prev_randao_it != j.end())
         random = from_json<bytes32>(*prev_randao_it);
 
@@ -168,14 +168,14 @@ state::BlockInfo from_json<state::BlockInfo>(const json::json& j)
     {
         for (const auto& withdrawal : *withdrawals_it)
         {
-            withdrawals.push_back({from_json<evmc::address>(withdrawal.at("address")),
+            withdrawals.push_back({from_json<zvmc::address>(withdrawal.at("address")),
                 from_json<uint64_t>(withdrawal.at("amount"))});
         }
     }
 
     return {from_json<int64_t>(j.at("currentNumber")), from_json<int64_t>(j.at("currentTimestamp")),
         from_json<int64_t>(j.at("currentGasLimit")),
-        from_json<evmc::address>(j.at("currentCoinbase")), random, base_fee,
+        from_json<zvmc::address>(j.at("currentCoinbase")), random, base_fee,
         std::move(withdrawals)};
 }
 
@@ -203,20 +203,20 @@ state::State from_json<state::State>(const json::json& j)
     return o;
 }
 
-evmc_revision to_rev(std::string_view s)
+zvmc_revision to_rev(std::string_view s)
 {
     if (s == "Shanghai")
-        return EVMC_SHANGHAI;
+        return ZVMC_SHANGHAI;
     throw std::invalid_argument{"unknown revision: " + std::string{s}};
 }
 
 /// Load common parts of Transaction or TestMultiTransaction.
 static void from_json_tx_common(const json::json& j, state::Transaction& o)
 {
-    o.sender = from_json<evmc::address>(j.at("sender"));
+    o.sender = from_json<zvmc::address>(j.at("sender"));
 
     if (const auto to_it = j.find("to"); to_it != j.end() && !to_it->get<std::string>().empty())
-        o.to = from_json<evmc::address>(*to_it);
+        o.to = from_json<zvmc::address>(*to_it);
 
     o.kind = state::Transaction::Kind::eip1559;
     o.max_gas_price = from_json<intx::uint256>(j.at("maxFeePerGas"));
@@ -318,4 +318,4 @@ StateTransitionTest load_state_test(std::istream& input)
 {
     return json::json::parse(input).get<StateTransitionTest>();
 }
-}  // namespace evmone::test
+}  // namespace zvmone::test

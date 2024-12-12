@@ -1,4 +1,4 @@
-// evmone: Fast Ethereum Virtual Machine implementation
+// zvmone: Fast Zond Virtual Machine implementation
 // Copyright 2022 The evmone Authors.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -8,9 +8,9 @@
 #include <optional>
 #include <unordered_set>
 
-namespace evmone::state
+namespace zvmone::state
 {
-using evmc::uint256be;
+using zvmc::uint256be;
 
 inline constexpr size_t max_code_size = 0x6000;
 inline constexpr size_t max_initcode_size = 2 * max_code_size;
@@ -28,24 +28,24 @@ inline constexpr size_t max_initcode_size = 2 * max_code_size;
 address compute_new_account_address(const address& sender, uint64_t sender_nonce,
     const std::optional<bytes32>& salt, bytes_view init_code) noexcept;
 
-class Host : public evmc::Host
+class Host : public zvmc::Host
 {
-    evmc_revision m_rev;
-    evmc::VM& m_vm;
+    zvmc_revision m_rev;
+    zvmc::VM& m_vm;
     State& m_state;
     const BlockInfo& m_block;
     const Transaction& m_tx;
     std::vector<Log> m_logs;
 
 public:
-    Host(evmc_revision rev, evmc::VM& vm, State& state, const BlockInfo& block,
+    Host(zvmc_revision rev, zvmc::VM& vm, State& state, const BlockInfo& block,
         const Transaction& tx) noexcept
       : m_rev{rev}, m_vm{vm}, m_state{state}, m_block{block}, m_tx{tx}
     {}
 
     [[nodiscard]] std::vector<Log>&& take_logs() noexcept { return std::move(m_logs); }
 
-    evmc::Result call(const evmc_message& msg) noexcept override;
+    zvmc::Result call(const zvmc_message& msg) noexcept override;
 
 private:
     [[nodiscard]] bool account_exists(const address& addr) const noexcept override;
@@ -53,7 +53,7 @@ private:
     [[nodiscard]] bytes32 get_storage(
         const address& addr, const bytes32& key) const noexcept override;
 
-    evmc_storage_status set_storage(
+    zvmc_storage_status set_storage(
         const address& addr, const bytes32& key, const bytes32& value) noexcept override;
 
     [[nodiscard]] uint256be get_balance(const address& addr) const noexcept override;
@@ -65,9 +65,9 @@ private:
     size_t copy_code(const address& addr, size_t code_offset, uint8_t* buffer_data,
         size_t buffer_size) const noexcept override;
 
-    evmc::Result create(const evmc_message& msg) noexcept;
+    zvmc::Result create(const zvmc_message& msg) noexcept;
 
-    [[nodiscard]] evmc_tx_context get_tx_context() const noexcept override;
+    [[nodiscard]] zvmc_tx_context get_tx_context() const noexcept override;
 
     [[nodiscard]] bytes32 get_block_hash(int64_t block_number) const noexcept override;
 
@@ -75,19 +75,19 @@ private:
         const bytes32 topics[], size_t topics_count) noexcept override;
 
 public:
-    evmc_access_status access_account(const address& addr) noexcept override;
+    zvmc_access_status access_account(const address& addr) noexcept override;
 
 private:
-    evmc_access_status access_storage(const address& addr, const bytes32& key) noexcept override;
+    zvmc_access_status access_storage(const address& addr, const bytes32& key) noexcept override;
 
     /// Prepares message for execution.
     ///
     /// This contains mostly checks and logic related to the sender
-    /// which may finally be moved to EVM.
+    /// which may finally be moved to ZVM.
     /// Any state modification is not reverted.
-    /// @return Modified message or std::nullopt in case of EVM exception.
-    std::optional<evmc_message> prepare_message(evmc_message msg);
+    /// @return Modified message or std::nullopt in case of ZVM exception.
+    std::optional<zvmc_message> prepare_message(zvmc_message msg);
 
-    evmc::Result execute_message(const evmc_message& msg) noexcept;
+    zvmc::Result execute_message(const zvmc_message& msg) noexcept;
 };
-}  // namespace evmone::state
+}  // namespace zvmone::state

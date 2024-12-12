@@ -1,4 +1,4 @@
-// evmone: Fast Ethereum Virtual Machine implementation
+// zvmone: Fast Zond Virtual Machine implementation
 // Copyright 2022 The evmone Authors.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -6,7 +6,7 @@
 #include "precompiles.hpp"
 #include "rlp.hpp"
 
-namespace evmone::state
+namespace zvmone::state
 {
 bool Host::account_exists(const address& addr) const noexcept
 {
@@ -22,10 +22,10 @@ bytes32 Host::get_storage(const address& addr, const bytes32& key) const noexcep
     return {};
 }
 
-evmc_storage_status Host::set_storage(
+zvmc_storage_status Host::set_storage(
     const address& addr, const bytes32& key, const bytes32& value) noexcept
 {
-    // Follow EVMC documentation https://evmc.ethereum.org/storagestatus.html#autotoc_md3
+    // Follow ZVMC documentation https://evmc.ethereum.org/storagestatus.html#autotoc_md3
     // and EIP-2200 specification https://eips.ethereum.org/EIPS/eip-2200.
 
     auto& storage_slot = m_state.get(addr).storage[key];
@@ -36,31 +36,31 @@ evmc_storage_status Host::set_storage(
     const auto current_is_zero = is_zero(current);
     const auto value_is_zero = is_zero(value);
 
-    auto status = EVMC_STORAGE_ASSIGNED;  // All other cases.
+    auto status = ZVMC_STORAGE_ASSIGNED;  // All other cases.
     if (!dirty && !restored)
     {
         if (current_is_zero)
-            status = EVMC_STORAGE_ADDED;  // 0 → 0 → Z
+            status = ZVMC_STORAGE_ADDED;  // 0 → 0 → Z
         else if (value_is_zero)
-            status = EVMC_STORAGE_DELETED;  // X → X → 0
+            status = ZVMC_STORAGE_DELETED;  // X → X → 0
         else
-            status = EVMC_STORAGE_MODIFIED;  // X → X → Z
+            status = ZVMC_STORAGE_MODIFIED;  // X → X → Z
     }
     else if (dirty && !restored)
     {
         if (current_is_zero && !value_is_zero)
-            status = EVMC_STORAGE_DELETED_ADDED;  // X → 0 → Z
+            status = ZVMC_STORAGE_DELETED_ADDED;  // X → 0 → Z
         else if (!current_is_zero && value_is_zero)
-            status = EVMC_STORAGE_MODIFIED_DELETED;  // X → Y → 0
+            status = ZVMC_STORAGE_MODIFIED_DELETED;  // X → Y → 0
     }
     else if (dirty && restored)
     {
         if (current_is_zero)
-            status = EVMC_STORAGE_DELETED_RESTORED;  // X → 0 → X
+            status = ZVMC_STORAGE_DELETED_RESTORED;  // X → 0 → X
         else if (value_is_zero)
-            status = EVMC_STORAGE_ADDED_DELETED;  // 0 → Y → 0
+            status = ZVMC_STORAGE_ADDED_DELETED;  // 0 → Y → 0
         else
-            status = EVMC_STORAGE_MODIFIED_RESTORED;  // X → Y → X
+            status = ZVMC_STORAGE_MODIFIED_RESTORED;  // X → Y → X
     }
 
     storage_slot.current = value;  // Update current value.
@@ -119,31 +119,31 @@ address compute_new_account_address(const address& sender, uint64_t sender_nonce
             &buffer[1 + sizeof(sender) + sizeof(salt->bytes)]);
         addr_base_hash = keccak256({buffer, std::size(buffer)});
     }
-    evmc_address new_addr{};
+    zvmc_address new_addr{};
     std::copy_n(&addr_base_hash.bytes[12], sizeof(new_addr), new_addr.bytes);
     return new_addr;
 }
 
-std::optional<evmc_message> Host::prepare_message(evmc_message msg)
+std::optional<zvmc_message> Host::prepare_message(zvmc_message msg)
 {
     auto& sender_acc = m_state.get(msg.sender);
     const auto sender_nonce = sender_acc.nonce;
 
     // Bump sender nonce.
-    if (msg.depth == 0 || msg.kind == EVMC_CREATE || msg.kind == EVMC_CREATE2)
+    if (msg.depth == 0 || msg.kind == ZVMC_CREATE || msg.kind == ZVMC_CREATE2)
     {
         if (sender_nonce == Account::NonceMax)
             return {};  // Light early exception, cannot happen for depth == 0.
         ++sender_acc.nonce;
     }
 
-    if (msg.kind == EVMC_CREATE || msg.kind == EVMC_CREATE2)
+    if (msg.kind == ZVMC_CREATE || msg.kind == ZVMC_CREATE2)
     {
         // Compute and fill create address.
         assert(msg.recipient == address{});
         assert(msg.code_address == address{});
         msg.recipient = compute_new_account_address(msg.sender, sender_nonce,
-            (msg.kind == EVMC_CREATE2) ? std::optional{msg.create2_salt} : std::nullopt,
+            (msg.kind == ZVMC_CREATE2) ? std::optional{msg.create2_salt} : std::nullopt,
             {msg.input_data, msg.input_size});
 
         // By EIP-2929, the  access to new created address is never reverted.
@@ -153,16 +153,16 @@ std::optional<evmc_message> Host::prepare_message(evmc_message msg)
     return msg;
 }
 
-evmc::Result Host::create(const evmc_message& msg) noexcept
+zvmc::Result Host::create(const zvmc_message& msg) noexcept
 {
-    assert(msg.kind == EVMC_CREATE || msg.kind == EVMC_CREATE2);
+    assert(msg.kind == ZVMC_CREATE || msg.kind == ZVMC_CREATE2);
 
     // Check collision as defined in pseudo-EIP https://github.com/ethereum/EIPs/issues/684.
     // All combinations of conditions (nonce, code, storage) are tested.
-    // TODO(EVMC): Add specific error codes for creation failures.
+    // TODO(ZVMC): Add specific error codes for creation failures.
     if (const auto collision_acc = m_state.find(msg.recipient);
         collision_acc != nullptr && (collision_acc->nonce != 0 || !collision_acc->code.empty()))
-        return evmc::Result{EVMC_FAILURE};
+        return zvmc::Result{ZVMC_FAILURE};
 
     auto& new_acc = m_state.get_or_insert(msg.recipient);
     assert(new_acc.nonce == 0);
@@ -175,7 +175,7 @@ evmc::Result Host::create(const evmc_message& msg) noexcept
 
     auto& sender_acc = m_state.get(msg.sender);  // TODO: Duplicated account lookup.
     const auto value = intx::be::load<intx::uint256>(msg.value);
-    assert(sender_acc.balance >= value && "EVM must guarantee balance");
+    assert(sender_acc.balance >= value && "ZVM must guarantee balance");
     sender_acc.balance -= value;
     new_acc.balance += value;  // The new account may be prefunded.
 
@@ -185,7 +185,7 @@ evmc::Result Host::create(const evmc_message& msg) noexcept
     create_msg.input_size = 0;
 
     auto result = m_vm.execute(*this, m_rev, create_msg, msg.input_data, msg.input_size);
-    if (result.status_code != EVMC_SUCCESS)
+    if (result.status_code != ZVMC_SUCCESS)
     {
         result.create_address = msg.recipient;
         return result;
@@ -196,34 +196,34 @@ evmc::Result Host::create(const evmc_message& msg) noexcept
 
     const bytes_view code{result.output_data, result.output_size};
     if (code.size() > max_code_size)
-        return evmc::Result{EVMC_FAILURE};
+        return zvmc::Result{ZVMC_FAILURE};
 
     // Code deployment cost.
     const auto cost = std::ssize(code) * 200;
     gas_left -= cost;
     if (gas_left < 0)
-        return evmc::Result{EVMC_FAILURE};
+        return zvmc::Result{ZVMC_FAILURE};
 
     if (!code.empty() && code[0] == 0xEF)  // Reject EF code.
-        return evmc::Result{EVMC_CONTRACT_VALIDATION_FAILURE};
+        return zvmc::Result{ZVMC_CONTRACT_VALIDATION_FAILURE};
 
     // TODO: The new_acc pointer is invalid because of the state revert implementation,
     //       but this should change if state journal is implemented.
     m_state.get(msg.recipient).code = code;
 
-    return evmc::Result{result.status_code, gas_left, result.gas_refund, msg.recipient};
+    return zvmc::Result{result.status_code, gas_left, result.gas_refund, msg.recipient};
 }
 
-evmc::Result Host::execute_message(const evmc_message& msg) noexcept
+zvmc::Result Host::execute_message(const zvmc_message& msg) noexcept
 {
-    if (msg.kind == EVMC_CREATE || msg.kind == EVMC_CREATE2)
+    if (msg.kind == ZVMC_CREATE || msg.kind == ZVMC_CREATE2)
         return create(msg);
 
-    assert(msg.kind != EVMC_CALL || evmc::address{msg.recipient} == msg.code_address);
+    assert(msg.kind != ZVMC_CALL || zvmc::address{msg.recipient} == msg.code_address);
     auto* const dst_acc =
-        (msg.kind == EVMC_CALL) ? &m_state.touch(msg.recipient) : m_state.find(msg.code_address);
+        (msg.kind == ZVMC_CALL) ? &m_state.touch(msg.recipient) : m_state.find(msg.code_address);
 
-    if (msg.kind == EVMC_CALL)
+    if (msg.kind == ZVMC_CALL)
     {
         // Transfer value.
         const auto value = intx::be::load<intx::uint256>(msg.value);
@@ -240,18 +240,18 @@ evmc::Result Host::execute_message(const evmc_message& msg) noexcept
     return m_vm.execute(*this, m_rev, msg, code.data(), code.size());
 }
 
-evmc::Result Host::call(const evmc_message& orig_msg) noexcept
+zvmc::Result Host::call(const zvmc_message& orig_msg) noexcept
 {
     const auto msg = prepare_message(orig_msg);
     if (!msg.has_value())
-        return evmc::Result{EVMC_FAILURE, orig_msg.gas};  // Light exception.
+        return zvmc::Result{ZVMC_FAILURE, orig_msg.gas};  // Light exception.
 
     auto state_snapshot = m_state;
     auto logs_snapshot = m_logs.size();
 
     auto result = execute_message(*msg);
 
-    if (result.status_code != EVMC_SUCCESS)
+    if (result.status_code != ZVMC_SUCCESS)
     {
         static constexpr auto addr_03 = "Z03"_address;
         auto* const acc_03 = m_state.find(addr_03);
@@ -268,7 +268,7 @@ evmc::Result Host::call(const evmc_message& orig_msg) noexcept
     return result;
 }
 
-evmc_tx_context Host::get_tx_context() const noexcept
+zvmc_tx_context Host::get_tx_context() const noexcept
 {
     // TODO: The effective gas price is already computed in transaction validation.
     assert(m_tx.max_gas_price >= m_block.base_fee);
@@ -276,7 +276,7 @@ evmc_tx_context Host::get_tx_context() const noexcept
         std::min(m_tx.max_priority_gas_price, m_tx.max_gas_price - m_block.base_fee);
     const auto effective_gas_price = m_block.base_fee + priority_gas_price;
 
-    return evmc_tx_context{
+    return zvmc_tx_context{
         intx::be::store<uint256be>(effective_gas_price),  // By EIP-1559.
         m_tx.sender,
         m_block.coinbase,
@@ -303,20 +303,20 @@ void Host::emit_log(const address& addr, const uint8_t* data, size_t data_size,
     m_logs.push_back({addr, {data, data_size}, {topics, topics + topics_count}});
 }
 
-evmc_access_status Host::access_account(const address& addr) noexcept
+zvmc_access_status Host::access_account(const address& addr) noexcept
 {
     auto& acc = m_state.get_or_insert(addr, {.erasable = true});
-    const auto status = std::exchange(acc.access_status, EVMC_ACCESS_WARM);
+    const auto status = std::exchange(acc.access_status, ZVMC_ACCESS_WARM);
 
     // Overwrite status for precompiled contracts: they are always warm.
-    if (status == EVMC_ACCESS_COLD && addr >= "Z01"_address && addr <= "Z09"_address)
-        return EVMC_ACCESS_WARM;
+    if (status == ZVMC_ACCESS_COLD && addr >= "Z01"_address && addr <= "Z09"_address)
+        return ZVMC_ACCESS_WARM;
 
     return status;
 }
 
-evmc_access_status Host::access_storage(const address& addr, const bytes32& key) noexcept
+zvmc_access_status Host::access_storage(const address& addr, const bytes32& key) noexcept
 {
-    return std::exchange(m_state.get(addr).storage[key].access_status, EVMC_ACCESS_WARM);
+    return std::exchange(m_state.get(addr).storage[key].access_status, ZVMC_ACCESS_WARM);
 }
-}  // namespace evmone::state
+}  // namespace zvmone::state

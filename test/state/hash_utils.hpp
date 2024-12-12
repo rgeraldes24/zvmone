@@ -1,21 +1,21 @@
-// evmone: Fast Ethereum Virtual Machine implementation
+// zvmone: Fast Zond Virtual Machine implementation
 // Copyright 2022 The evmone Authors.
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
 
 #include <ethash/keccak.hpp>
-#include <evmc/evmc.hpp>
-#include <evmc/hex.hpp>
+#include <zvmc/hex.hpp>
+#include <zvmc/zvmc.hpp>
 #include <cstring>
 
-namespace evmone
+namespace zvmone
 {
-using evmc::address;
-using evmc::bytes;
-using evmc::bytes32;
-using evmc::bytes_view;
-using namespace evmc::literals;
+using zvmc::address;
+using zvmc::bytes;
+using zvmc::bytes32;
+using zvmc::bytes_view;
+using namespace zvmc::literals;
 
 /// Default type for 256-bit hash.
 ///
@@ -30,7 +30,7 @@ inline hash256 keccak256(bytes_view data) noexcept
     std::memcpy(h.bytes, eh.bytes, sizeof(h));  // TODO: Use std::bit_cast.
     return h;
 }
-}  // namespace evmone
+}  // namespace zvmone
 
-std::ostream& operator<<(std::ostream& out, const evmone::address& a);
-std::ostream& operator<<(std::ostream& out, const evmone::bytes32& b);
+std::ostream& operator<<(std::ostream& out, const zvmone::address& a);
+std::ostream& operator<<(std::ostream& out, const zvmone::bytes32& b);

@@ -1,15 +1,15 @@
-// evmone: Fast Ethereum Virtual Machine implementation
+// zvmone: Fast Zond Virtual Machine implementation
 // Copyright 2018 The evmone Authors.
 // SPDX-License-Identifier: Apache-2.0
 #pragma once
 
-#include <evmc/hex.hpp>
+#include <zvmc/hex.hpp>
 
-using evmc::bytes;
-using evmc::bytes_view;
-using evmc::from_hex;
-using evmc::from_spaced_hex;
-using evmc::hex;
+using zvmc::bytes;
+using zvmc::bytes_view;
+using zvmc::from_hex;
+using zvmc::from_spaced_hex;
+using zvmc::hex;
 
 /// Converts a string to bytes by casting individual characters.
 inline bytes to_bytes(std::string_view s)

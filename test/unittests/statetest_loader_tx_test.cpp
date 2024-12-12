@@ -1,16 +1,16 @@
-// evmone: Fast Ethereum Virtual Machine implementation
+// zvmone: Fast Zond Virtual Machine implementation
 // Copyright 2023 The evmone Authors.
 // SPDX-License-Identifier: Apache-2.0
 
-#include <evmc/hex.hpp>
 #include <gmock/gmock.h>
 #include <intx/intx.hpp>
 #include <test/statetest/statetest.hpp>
+#include <zvmc/hex.hpp>
 
-using namespace evmone;
+using namespace zvmone;
 using namespace intx;
 using namespace testing;
-using namespace evmc;
+using namespace zvmc;
 
 TEST(statetest_loader, tx_eip1559)
 {
@@ -41,7 +41,7 @@ TEST(statetest_loader, tx_eip1559)
     EXPECT_TRUE(tx.access_list.empty());
     EXPECT_EQ(tx.nonce, 0);
     EXPECT_EQ(tx.public_key,
-        evmc::from_hex(
+        zvmc::from_hex(
             "b543b479d32596ff68142e1b094d6c5bb163637cdb1a7823545bbb247216c3eb88b3cc84994aecd8b2efca"
             "728e5b7d230aeab46f170fd728959fe12adaa224db67821612405e10f3ffd7ca17cbe6d334603df7569826"
             "76098c4b312043c28e9ac4333c6adca787b626df488a6073e625ec15b43ad996540ff4acbc0399f86c3b71"
@@ -104,7 +104,7 @@ TEST(statetest_loader, tx_eip1559)
             "ea1e5f9bbb5c122ce22a53371250a58e5d7a735419cc32a8ab047cf097253f8a84dfe64c208b0b0c80e593"
             "0cb26ce93f375eb3c1db4bb7"));
     EXPECT_EQ(tx.signature,
-        evmc::from_hex(
+        zvmc::from_hex(
             "131cea321925fbfd34681919d181826208ee5e27280a0882101b8072cf371aab14330a0fa303e2cbbc5ab5"
             "bd5f54e23077563a75f4f261e05ae6a7d55a92e8fe0b8c899d8b5145723c23e3d606f7797099866e0f4075"
             "dcd0f68c5a86295a4d1414acf5a14d22392477a96e12b4ac9f554f522381d9a641d888f1f4d0bb18092adb"
@@ -249,7 +249,7 @@ TEST(statetest_loader, tx_access_list)
     EXPECT_EQ(tx.access_list[1].second, (std::vector{0xfe_bytes32, 0x00_bytes32}));
     EXPECT_EQ(tx.nonce, 0);
     EXPECT_EQ(tx.public_key,
-        evmc::from_hex(
+        zvmc::from_hex(
             "b543b479d32596ff68142e1b094d6c5bb163637cdb1a7823545bbb247216c3eb88b3cc84994aecd8b2efca"
             "728e5b7d230aeab46f170fd728959fe12adaa224db67821612405e10f3ffd7ca17cbe6d334603df7569826"
             "76098c4b312043c28e9ac4333c6adca787b626df488a6073e625ec15b43ad996540ff4acbc0399f86c3b71"
@@ -312,7 +312,7 @@ TEST(statetest_loader, tx_access_list)
             "ea1e5f9bbb5c122ce22a53371250a58e5d7a735419cc32a8ab047cf097253f8a84dfe64c208b0b0c80e593"
             "0cb26ce93f375eb3c1db4bb7"));
     EXPECT_EQ(tx.signature,
-        evmc::from_hex(
+        zvmc::from_hex(
             "131cea321925fbfd34681919d181826208ee5e27280a0882101b8072cf371aab14330a0fa303e2cbbc5ab5"
             "bd5f54e23077563a75f4f261e05ae6a7d55a92e8fe0b8c899d8b5145723c23e3d606f7797099866e0f4075"
             "dcd0f68c5a86295a4d1414acf5a14d22392477a96e12b4ac9f554f522381d9a641d888f1f4d0bb18092adb"
@@ -489,13 +489,13 @@ TEST(statetest_loader, invalid_tx_type)
     }
 }
 
-namespace evmone::test
+namespace zvmone::test
 {
 // This function is used only by the following test case and in `statetest_loader.cpp` where it is
 // defined.
 template <>
 uint8_t from_json<uint8_t>(const json::json& j);
-}  // namespace evmone::test
+}  // namespace zvmone::test
 
 TEST(statetest_loader, load_uint8_t)
 {

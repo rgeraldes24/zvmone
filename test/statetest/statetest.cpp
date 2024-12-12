@@ -1,11 +1,11 @@
-// evmone: Fast Ethereum Virtual Machine implementation
+// zvmone: Fast Zond Virtual Machine implementation
 // Copyright 2022 The evmone Authors.
 // SPDX-License-Identifier: Apache-2.0
 
 #include "statetest.hpp"
 #include <CLI/CLI.hpp>
-#include <evmone/evmone.h>
 #include <gtest/gtest.h>
+#include <zvmone/zvmone.h>
 #include <iostream>
 
 namespace
@@ -13,28 +13,28 @@ namespace
 class StateTest : public testing::Test
 {
     fs::path m_json_test_file;
-    evmc::VM& m_vm;
+    zvmc::VM& m_vm;
 
 public:
-    explicit StateTest(fs::path json_test_file, evmc::VM& vm) noexcept
+    explicit StateTest(fs::path json_test_file, zvmc::VM& vm) noexcept
       : m_json_test_file{std::move(json_test_file)}, m_vm{vm}
     {}
 
     void TestBody() final
     {
         std::ifstream f{m_json_test_file};
-        evmone::test::run_state_test(evmone::test::load_state_test(f), m_vm);
+        zvmone::test::run_state_test(zvmone::test::load_state_test(f), m_vm);
     }
 };
 
-void register_test(const std::string& suite_name, const fs::path& file, evmc::VM& vm)
+void register_test(const std::string& suite_name, const fs::path& file, zvmc::VM& vm)
 {
     testing::RegisterTest(suite_name.c_str(), file.stem().string().c_str(), nullptr, nullptr,
         file.string().c_str(), 0,
         [file, &vm]() -> testing::Test* { return new StateTest(file, vm); });
 }
 
-void register_test_files(const fs::path& root, evmc::VM& vm)
+void register_test_files(const fs::path& root, zvmc::VM& vm)
 {
     if (is_directory(root))
     {
@@ -73,7 +73,7 @@ int main(int argc, char* argv[])
     {
         testing::InitGoogleTest(&argc, argv);  // Process GoogleTest flags.
 
-        CLI::App app{"evmone state test runner"};
+        CLI::App app{"zvmone state test runner"};
 
         std::vector<std::string> paths;
         app.add_option("path", paths, "Path to test file or directory")
@@ -81,11 +81,11 @@ int main(int argc, char* argv[])
             ->check(CLI::ExistingPath);
 
         bool trace_flag = false;
-        app.add_flag("--trace", trace_flag, "Enable EVM tracing");
+        app.add_flag("--trace", trace_flag, "Enable ZVM tracing");
 
         CLI11_PARSE(app, argc, argv);
 
-        evmc::VM vm{evmc_create_evmone(), {{"O", "0"}}};
+        zvmc::VM vm{zvmc_create_zvmone(), {{"O", "0"}}};
 
         if (trace_flag)
             vm.set_option("trace", "1");

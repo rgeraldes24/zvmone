@@ -1,13 +1,13 @@
-// evmone: Fast Ethereum Virtual Machine implementation
+// zvmone: Fast Zond Virtual Machine implementation
 // Copyright 2023 The evmone Authors.
 // SPDX-License-Identifier: Apache-2.0
 
 #include "../state/mpt_hash.hpp"
 #include "../state/rlp.hpp"
 #include "../statetest/statetest.hpp"
-#include <evmone/evmone.h>
-#include <evmone/version.h>
 #include <nlohmann/json.hpp>
+#include <zvmone/version.h>
+#include <zvmone/zvmone.h>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -15,13 +15,13 @@
 
 namespace fs = std::filesystem;
 namespace json = nlohmann;
-using namespace evmone;
-using namespace evmone::test;
+using namespace zvmone;
+using namespace zvmone::test;
 using namespace std::literals;
 
 int main(int argc, const char* argv[])
 {
-    evmc_revision rev = {};
+    zvmc_revision rev = {};
     fs::path alloc_file;
     fs::path env_file;
     fs::path txs_file;
@@ -39,11 +39,11 @@ int main(int argc, const char* argv[])
 
             if (arg == "-v")
             {
-                std::cout << "evmone-t8n " EVMONE_VERSION "\n";
+                std::cout << "zvmone-t8n " ZVMONE_VERSION "\n";
                 return 0;
             }
             if (arg == "--state.fork" && ++i < argc)
-                rev = evmone::test::to_rev(argv[i]);
+                rev = zvmone::test::to_rev(argv[i]);
             else if (arg == "--input.alloc" && ++i < argc)
                 alloc_file = argv[i];
             else if (arg == "--input.env" && ++i < argc)
@@ -88,7 +88,7 @@ int main(int argc, const char* argv[])
         {
             const auto j_txs = json::json::parse(std::ifstream{txs_file});
 
-            evmc::VM vm{evmc_create_evmone(), {{"O", "0"}}};
+            zvmc::VM vm{zvmc_create_zvmone(), {{"O", "0"}}};
 
             std::vector<state::Log> txs_logs;
 
@@ -109,7 +109,7 @@ int main(int argc, const char* argv[])
                     if (j_txs[i].contains("hash"))
                     {
                         const auto loaded_tx_hash_opt =
-                            evmc::from_hex<bytes32>(j_txs[i]["hash"].get<std::string>());
+                            zvmc::from_hex<bytes32>(j_txs[i]["hash"].get<std::string>());
 
                         if (loaded_tx_hash_opt != computed_tx_hash)
                             throw std::logic_error("transaction hash mismatched: computed " +

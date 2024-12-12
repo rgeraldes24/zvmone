@@ -1,18 +1,18 @@
-// evmone: Fast Ethereum Virtual Machine implementation
+// zvmone: Fast Zond Virtual Machine implementation
 // Copyright 2023 The evmone Authors.
 // SPDX-License-Identifier: Apache-2.0
 #pragma once
 
-#include <evmone/evmone.h>
 #include <gtest/gtest.h>
 #include <test/state/host.hpp>
+#include <zvmone/zvmone.h>
 
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 
-namespace evmone::test
+namespace zvmone::test
 {
-using namespace evmone;
-using namespace evmone::state;
+using namespace zvmone;
+using namespace zvmone::state;
 
 /// Fixture to defining test cases in form similar to JSON State Tests.
 ///
@@ -30,7 +30,7 @@ protected:
 
     static constexpr auto Coinbase = "Zc014bace"_address;
 
-    static inline evmc::VM vm{evmc_create_evmone()};
+    static inline zvmc::VM vm{zvmc_create_zvmone()};
 
     struct ExpectedAccount
     {
@@ -43,14 +43,14 @@ protected:
 
     struct Expectation
     {
-        evmc_status_code status = EVMC_SUCCESS;
+        zvmc_status_code status = ZVMC_SUCCESS;
         std::optional<int64_t> gas_used;
 
         std::unordered_map<address, ExpectedAccount> post;
     };
 
 
-    evmc_revision rev = EVMC_SHANGHAI;
+    zvmc_revision rev = ZVMC_SHANGHAI;
     BlockInfo block{
         .gas_limit = 1'000'000,
         .coinbase = Coinbase,
@@ -71,4 +71,4 @@ protected:
     void TearDown() override;
 };
 
-}  // namespace evmone::test
+}  // namespace zvmone::test

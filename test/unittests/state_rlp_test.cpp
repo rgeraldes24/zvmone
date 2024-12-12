@@ -1,4 +1,4 @@
-// evmone: Fast Ethereum Virtual Machine implementation
+// zvmone: Fast Zond Virtual Machine implementation
 // Copyright 2022 The evmone Authors.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -9,8 +9,8 @@
 #include <test/utils/utils.hpp>
 #include <bit>
 
-using namespace evmone;
-using namespace evmc::literals;
+using namespace zvmone;
+using namespace zvmc::literals;
 using namespace intx;
 using namespace testing;
 
@@ -202,7 +202,7 @@ TEST(state_rlp, tx_to_rlp_eip1559)
 {
     state::Transaction tx{};
 
-    tx.kind = evmone::state::Transaction::Kind::eip1559;
+    tx.kind = zvmone::state::Transaction::Kind::eip1559;
     tx.data = ""_b;
     tx.gas_limit = 30000;
     tx.max_gas_price = 14237787676;
@@ -229,7 +229,7 @@ TEST(state_rlp, tx_to_rlp_eip1559)
 TEST(state_rlp, tx_to_rlp_eip1559_with_data)
 {
     state::Transaction tx{};
-    tx.kind = evmone::state::Transaction::Kind::eip1559;
+    tx.kind = zvmone::state::Transaction::Kind::eip1559;
     tx.data =
         "095ea7b3"
         "0000000000000000000000001111111254eeb25477b68fb85ed929f73a960582"
@@ -259,7 +259,7 @@ TEST(state_rlp, tx_to_rlp_eip1559_with_data)
 TEST(state_rlp, tx_to_rlp_eip1559_with_non_empty_access_list)
 {
     state::Transaction tx{};
-    tx.kind = evmone::state::Transaction::Kind::eip1559;
+    tx.kind = zvmone::state::Transaction::Kind::eip1559;
     tx.data = "00"_hex;
     tx.gas_limit = 0x3d0900;
     tx.max_gas_price = 0x7d0;

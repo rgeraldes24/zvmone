@@ -1,19 +1,19 @@
-// evmone: Fast Ethereum Virtual Machine implementation
+// zvmone: Fast Zond Virtual Machine implementation
 // Copyright 2022 The evmone Authors.
 // SPDX-License-Identifier: Apache-2.0
 
 #include "hash_utils.hpp"
 #include "precompiles.hpp"
-#include <evmc/evmc.hpp>
+#include <zvmc/zvmc.hpp>
 #include <array>
 #include <cstdint>
 #include <optional>
 #include <unordered_map>
 
-namespace evmone::state
+namespace zvmone::state
 {
-using evmc::bytes;
-using evmc::bytes_view;
+using zvmc::bytes;
+using zvmc::bytes_view;
 
 class Cache
 {
@@ -31,9 +31,9 @@ public:
     ///                  used for constructing the result for successful execution.
     /// @return          The cached execution result
     ///                  or std::nullopt if the matching cache entry is not found.
-    std::optional<evmc::Result> find(PrecompileId id, bytes_view input, int64_t gas_left) const;
+    std::optional<zvmc::Result> find(PrecompileId id, bytes_view input, int64_t gas_left) const;
 
     /// Inserts new precompiles cache entry.
-    void insert(PrecompileId id, bytes_view input, const evmc::Result& result);
+    void insert(PrecompileId id, bytes_view input, const zvmc::Result& result);
 };
-}  // namespace evmone::state
+}  // namespace zvmone::state

@@ -1,4 +1,4 @@
-// evmone: Fast Ethereum Virtual Machine implementation
+// zvmone: Fast Zond Virtual Machine implementation
 // Copyright 2022 The evmone Authors.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -8,8 +8,8 @@
 #include <test/utils/utils.hpp>
 #include <numeric>
 
-using namespace evmone;
-using namespace evmone::state;
+using namespace zvmone;
+using namespace zvmone::state;
 using namespace intx;
 
 TEST(state_mpt, empty_trie)
@@ -19,7 +19,7 @@ TEST(state_mpt, empty_trie)
 
 TEST(state_mpt, single_account_v1)
 {
-    // Expected value computed in go-ethereum.
+    // Expected value computed in go-zond.
     constexpr auto expected =
         0x084f337237951e425716a04fb0aaa74111eda9d9c61767f2497697d0a201c92e_bytes32;
 

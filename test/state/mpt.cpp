@@ -1,4 +1,4 @@
-// evmone: Fast Ethereum Virtual Machine implementation
+// zvmone: Fast Zond Virtual Machine implementation
 // Copyright 2022 The evmone Authors.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <cassert>
 
-namespace evmone::state
+namespace zvmone::state
 {
 namespace
 {
@@ -280,4 +280,4 @@ void MPT::insert(bytes_view key, bytes&& value)
     return m_root->hash();
 }
 
-}  // namespace evmone::state
+}  // namespace zvmone::state

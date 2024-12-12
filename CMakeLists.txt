@@ -1,16 +1,16 @@
-# evmone: Ethereum Virtual Machine
+# zvmone: Zond Virtual Machine
 # Copyright 2019 The evmone Authors.
 # SPDX-License-Identifier: Apache-2.0
 
 cmake_minimum_required(VERSION 3.18...3.27)
 
-if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/evmc/.git)
+if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/zvmc/.git)
     message(FATAL_ERROR "Git submodules not initialized, execute:\n  git submodule update --init")
 endif()
 
-option(BUILD_SHARED_LIBS "Build evmone as a shared library" ON)
-option(EVMONE_TESTING "Build tests and test tools" OFF)
-option(EVMONE_FUZZING "Instrument libraries and build fuzzing tools" OFF)
+option(BUILD_SHARED_LIBS "Build zvmone as a shared library" ON)
+option(ZVMONE_TESTING "Build tests and test tools" OFF)
+option(ZVMONE_FUZZING "Instrument libraries and build fuzzing tools" OFF)
 
 include(cmake/cable/bootstrap.cmake)
 include(CableBuildType)
@@ -24,7 +24,7 @@ cable_set_build_type(DEFAULT Release CONFIGURATION_TYPES Release Debug)
 
 include(Hunter/init)
 
-project(evmone LANGUAGES CXX C)
+project(zvmone LANGUAGES CXX C)
 set(PROJECT_VERSION 0.10.0)
 
 string(REGEX MATCH "([0-9]+)\\.([0-9]+)" _ ${PROJECT_VERSION})
@@ -39,17 +39,17 @@ endif()
 hunter_add_package(ethash)
 find_package(ethash CONFIG REQUIRED)
 
-option(EVMC_TOOLS "Build EVMC test tools" ${EVMONE_TESTING})
-option(EVMC_INSTALL "Install EVMC" OFF)
+option(ZVMC_TOOLS "Build ZVMC test tools" ${ZVMONE_TESTING})
+option(ZVMC_INSTALL "Install ZVMC" OFF)
 
 if(COMMAND block) # TODO(cmake-3.25)
     block()
         set(CMAKE_C_CLANG_TIDY "")
         set(CMAKE_CXX_CLANG_TIDY "")
-        add_subdirectory(evmc)
+        add_subdirectory(zvmc)
     endblock()
 else()
-    add_subdirectory(evmc)
+    add_subdirectory(zvmc)
 endif()
 
 
@@ -88,32 +88,32 @@ if(CMAKE_SYSTEM_PROCESSOR STREQUAL x86_64)
     # Setup options for x86_64 micro-architecture levels.
     # https://clang.llvm.org/docs/UsersManual.html#x86
 
-    set(EVMONE_X86_64_ARCH_LEVEL_INIT 2)
+    set(ZVMONE_X86_64_ARCH_LEVEL_INIT 2)
     if(APPLE)
         # On macos with Apple Silicon CPU (arm64) the x86 is emulated and SSE4.2 is not available.
-        set(EVMONE_X86_64_ARCH_LEVEL_INIT 1)
+        set(ZVMONE_X86_64_ARCH_LEVEL_INIT 1)
     endif()
 
-    set(EVMONE_X86_64_ARCH_LEVEL ${EVMONE_X86_64_ARCH_LEVEL_INIT} CACHE STRING "The x86_64 micro-architecture level")
-    if(EVMONE_X86_64_ARCH_LEVEL GREATER_EQUAL 1 AND EVMONE_X86_64_ARCH_LEVEL LESS_EQUAL 4)
-        message(STATUS "x86_64 micro-architecture level: ${EVMONE_X86_64_ARCH_LEVEL}")
-        if(EVMONE_X86_64_ARCH_LEVEL GREATER_EQUAL 2)
-            add_compile_options(-march=x86-64-v${EVMONE_X86_64_ARCH_LEVEL})
+    set(ZVMONE_X86_64_ARCH_LEVEL ${ZVMONE_X86_64_ARCH_LEVEL_INIT} CACHE STRING "The x86_64 micro-architecture level")
+    if(ZVMONE_X86_64_ARCH_LEVEL GREATER_EQUAL 1 AND ZVMONE_X86_64_ARCH_LEVEL LESS_EQUAL 4)
+        message(STATUS "x86_64 micro-architecture level: ${ZVMONE_X86_64_ARCH_LEVEL}")
+        if(ZVMONE_X86_64_ARCH_LEVEL GREATER_EQUAL 2)
+            add_compile_options(-march=x86-64-v${ZVMONE_X86_64_ARCH_LEVEL})
         endif()
     else()
-        message(FATAL_ERROR "Invalid EVMONE_X86_64_ARCH_LEVEL: ${EVMONE_X86_64_ARCH_LEVEL}")
+        message(FATAL_ERROR "Invalid ZVMONE_X86_64_ARCH_LEVEL: ${ZVMONE_X86_64_ARCH_LEVEL}")
     endif()
 endif()
 
 include(GNUInstallDirs)
 
-if(EVMONE_FUZZING)
+if(ZVMONE_FUZZING)
     if(NOT ${CMAKE_CXX_COMPILER_ID} MATCHES Clang OR ${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS 8)
         message(FATAL_ERROR "Clang 8+ compiler is required for fuzzing")
     endif()
 
-    set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build evmone as a shared library" FORCE)
-    set(EVMONE_TESTING ON CACHE BOOL "Build tests and test tools" FORCE)
+    set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build zvmone as a shared library" FORCE)
+    set(ZVMONE_TESTING ON CACHE BOOL "Build tests and test tools" FORCE)
 
     string(TOUPPER ${CMAKE_BUILD_TYPE} build_type)
     string(COMPARE EQUAL ${build_type} COVERAGE fuzzing_coverage)
@@ -131,7 +131,7 @@ set(include_dir ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 add_subdirectory(lib)
 
-if(EVMONE_TESTING)
+if(ZVMONE_TESTING)
     enable_testing()
     add_subdirectory(test)
 endif()
@@ -139,15 +139,15 @@ endif()
 
 # INSTALL
 
-set(install_targets evmone)
-if(TARGET evmone-standalone)
-    list(APPEND install_targets evmone-standalone)
+set(install_targets zvmone)
+if(TARGET zvmone-standalone)
+    list(APPEND install_targets zvmone-standalone)
 endif()
-if(TARGET evm-test)
-    list(APPEND install_targets evm-test)
+if(TARGET zvm-test)
+    list(APPEND install_targets zvm-test)
 endif()
-if(TARGET evmone-bench)
-    list(APPEND install_targets evmone-bench)
+if(TARGET zvmone-bench)
+    list(APPEND install_targets zvmone-bench)
 endif()
 
 set_target_properties(
@@ -157,7 +157,7 @@ set_target_properties(
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}
 )
 
-install(TARGETS ${install_targets} EXPORT evmoneTargets
+install(TARGETS ${install_targets} EXPORT zvmoneTargets
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

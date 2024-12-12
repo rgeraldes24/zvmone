@@ -1,12 +1,12 @@
-// evmone: Fast Ethereum Virtual Machine implementation
+// zvmone: Fast Zond Virtual Machine implementation
 // Copyright 2019-2020 The evmone Authors.
 // SPDX-License-Identifier: Apache-2.0
 #pragma once
 
-#include <evmc/evmc.hpp>
-#include <evmone/instructions_traits.hpp>
 #include <intx/intx.hpp>
 #include <test/utils/utils.hpp>
+#include <zvmc/zvmc.hpp>
+#include <zvmone/instructions_traits.hpp>
 #include <algorithm>
 #include <ostream>
 #include <stdexcept>
@@ -14,13 +14,13 @@
 struct bytecode;
 
 inline bytecode push(uint64_t n);
-inline bytecode push(evmc::address addr);
-inline bytecode push(evmc::bytes32 bs);
+inline bytecode push(zvmc::address addr);
+inline bytecode push(zvmc::bytes32 bs);
 
-using enum evmone::Opcode;
-using evmone::Opcode;
+using enum zvmone::Opcode;
+using zvmone::Opcode;
 
-// TODO: Pull bytecode in evmone namespace
+// TODO: Pull bytecode in zvmone namespace
 struct bytecode : bytes
 {
     bytecode() noexcept = default;
@@ -38,9 +38,9 @@ struct bytecode : bytes
 
     bytecode(uint64_t n) : bytes{push(n)} {}
 
-    bytecode(evmc::address addr) : bytes{push(addr)} {}
+    bytecode(zvmc::address addr) : bytes{push(addr)} {}
 
-    bytecode(evmc::bytes32 bs) : bytes{push(bs)} {}
+    bytecode(zvmc::bytes32 bs) : bytes{push(bs)} {}
 
     operator bytes_view() const noexcept { return {data(), size()}; }
 };
@@ -137,13 +137,13 @@ inline bytecode push(uint64_t n)
     return push(data);
 }
 
-inline bytecode push(evmc::bytes32 bs)
+inline bytecode push(zvmc::bytes32 bs)
 {
     bytes_view data{bs.bytes, sizeof(bs.bytes)};
     return push(data.substr(std::min(data.find_first_not_of(uint8_t{0}), size_t{31})));
 }
 
-inline bytecode push(evmc::address addr)
+inline bytecode push(zvmc::address addr)
 {
     return push({std::data(addr.bytes), std::size(addr.bytes)});
 }
@@ -398,7 +398,7 @@ inline std::string decode(bytes_view bytecode)
     for (auto it = bytecode.begin(); it != bytecode.end(); ++it)
     {
         const auto opcode = *it;
-        if (const auto name = evmone::instr::traits[opcode].name; name)
+        if (const auto name = zvmone::instr::traits[opcode].name; name)
         {
             s += std::string{" + OP_"} + name;
 

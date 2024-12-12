@@ -1,4 +1,4 @@
-// evmone: Fast Ethereum Virtual Machine implementation
+// zvmone: Fast Zond Virtual Machine implementation
 // Copyright 2022 The evmone Authors.
 // SPDX-License-Identifier: Apache-2.0
 #pragma once
@@ -7,7 +7,7 @@
 #include <span>
 #include <unordered_map>
 
-namespace evmone::state
+namespace zvmone::state
 {
 struct Account;
 struct Transaction;
@@ -22,4 +22,4 @@ hash256 mpt_hash(std::span<const Transaction> transactions);
 /// Computes Merkle Patricia Trie root hash for the given collection of transactions receipts.
 hash256 mpt_hash(std::span<const TransactionReceipt> receipts);
 
-}  // namespace evmone::state
+}  // namespace zvmone::state

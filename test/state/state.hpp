@@ -1,4 +1,4 @@
-// evmone: Fast Ethereum Virtual Machine implementation
+// zvmone: Fast Zond Virtual Machine implementation
 // Copyright 2022 The evmone Authors.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -12,7 +12,7 @@
 #include <variant>
 #include <vector>
 
-namespace evmone::state
+namespace zvmone::state
 {
 class State
 {
@@ -123,7 +123,7 @@ struct Log
 struct TransactionReceipt
 {
     Transaction::Kind kind = Transaction::Kind::eip1559;
-    evmc_status_code status = EVMC_INTERNAL_ERROR;
+    zvmc_status_code status = ZVMC_INTERNAL_ERROR;
     int64_t gas_used = 0;
     std::vector<Log> logs;
     BloomFilter logs_bloom_filter;
@@ -132,10 +132,10 @@ struct TransactionReceipt
 /// Finalize state after applying a "block" of transactions.
 ///
 /// Applies withdrawals and deletes empty touched accounts.
-void finalize(State& state, evmc_revision rev, std::span<Withdrawal> withdrawals);
+void finalize(State& state, zvmc_revision rev, std::span<Withdrawal> withdrawals);
 
 [[nodiscard]] std::variant<TransactionReceipt, std::error_code> transition(
-    State& state, const BlockInfo& block, const Transaction& tx, evmc_revision rev, evmc::VM& vm);
+    State& state, const BlockInfo& block, const Transaction& tx, zvmc_revision rev, zvmc::VM& vm);
 
 /// Defines how to RLP-encode a Transaction.
 [[nodiscard]] bytes rlp_encode(const Transaction& tx);
@@ -146,4 +146,4 @@ void finalize(State& state, evmc_revision rev, std::span<Withdrawal> withdrawals
 /// Defines how to RLP-encode a Log.
 [[nodiscard]] bytes rlp_encode(const Log& log);
 
-}  // namespace evmone::state
+}  // namespace zvmone::state

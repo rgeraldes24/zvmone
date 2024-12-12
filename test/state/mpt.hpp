@@ -1,4 +1,4 @@
-// evmone: Fast Ethereum Virtual Machine implementation
+// zvmone: Fast Zond Virtual Machine implementation
 // Copyright 2022 The evmone Authors.
 // SPDX-License-Identifier: Apache-2.0
 #pragma once
@@ -6,7 +6,7 @@
 #include "hash_utils.hpp"
 #include <memory>
 
-namespace evmone::state
+namespace zvmone::state
 {
 constexpr auto emptyMPTHash =
     0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421_bytes32;
@@ -26,4 +26,4 @@ public:
     [[nodiscard]] hash256 hash() const;
 };
 
-}  // namespace evmone::state
+}  // namespace zvmone::state

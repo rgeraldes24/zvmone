@@ -1,4 +1,4 @@
-// evmone: Fast Ethereum Virtual Machine implementation
+// zvmone: Fast Zond Virtual Machine implementation
 // Copyright 2022 The evmone Authors.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -6,10 +6,10 @@
 #include "errors.hpp"
 #include "host.hpp"
 #include "rlp.hpp"
-#include <evmone/evmone.h>
-#include <evmone/execution_state.hpp>
+#include <zvmone/execution_state.hpp>
+#include <zvmone/zvmone.h>
 
-namespace evmone::state
+namespace zvmone::state
 {
 namespace
 {
@@ -18,7 +18,7 @@ inline constexpr int64_t num_words(size_t size_in_bytes) noexcept
     return static_cast<int64_t>((size_in_bytes + 31) / 32);
 }
 
-int64_t compute_tx_data_cost(evmc_revision /*rev*/, bytes_view data) noexcept
+int64_t compute_tx_data_cost(zvmc_revision /*rev*/, bytes_view data) noexcept
 {
     constexpr int64_t zero_byte_cost = 4;
     const int64_t nonzero_byte_cost = 16;
@@ -39,7 +39,7 @@ int64_t compute_access_list_cost(const AccessList& access_list) noexcept
     return cost;
 }
 
-int64_t compute_tx_intrinsic_cost(evmc_revision rev, const Transaction& tx) noexcept
+int64_t compute_tx_intrinsic_cost(zvmc_revision rev, const Transaction& tx) noexcept
 {
     static constexpr auto call_tx_cost = 21000;
     static constexpr auto create_tx_cost = 53000;
@@ -51,11 +51,11 @@ int64_t compute_tx_intrinsic_cost(evmc_revision rev, const Transaction& tx) noex
            initcode_cost;
 }
 
-/// Validates transaction and computes its execution gas limit (the amount of gas provided to EVM).
+/// Validates transaction and computes its execution gas limit (the amount of gas provided to ZVM).
 /// @return  Non-negative execution gas limit for valid transaction
 ///          or negative value for invalid transaction.
 std::variant<int64_t, std::error_code> validate_transaction(const Account& sender_acc,
-    const BlockInfo& block, const Transaction& tx, evmc_revision rev) noexcept
+    const BlockInfo& block, const Transaction& tx, zvmc_revision rev) noexcept
 {
     if (tx.max_priority_gas_price > tx.max_gas_price)
         return make_error_code(TIP_GT_FEE_CAP);  // Priority gas price is too high.
@@ -91,11 +91,11 @@ std::variant<int64_t, std::error_code> validate_transaction(const Account& sende
     return tx.gas_limit - intrinsic_cost;
 }
 
-evmc_message build_message(const Transaction& tx, int64_t execution_gas_limit) noexcept
+zvmc_message build_message(const Transaction& tx, int64_t execution_gas_limit) noexcept
 {
-    const auto recipient = tx.to.has_value() ? *tx.to : evmc::address{};
+    const auto recipient = tx.to.has_value() ? *tx.to : zvmc::address{};
     return {
-        tx.to.has_value() ? EVMC_CALL : EVMC_CREATE,
+        tx.to.has_value() ? ZVMC_CALL : ZVMC_CREATE,
         0,
         0,
         execution_gas_limit,
@@ -103,14 +103,14 @@ evmc_message build_message(const Transaction& tx, int64_t execution_gas_limit) n
         tx.sender,
         tx.data.data(),
         tx.data.size(),
-        intx::be::store<evmc::uint256be>(tx.value),
+        intx::be::store<zvmc::uint256be>(tx.value),
         {},
         recipient,
     };
 }
 }  // namespace
 
-void finalize(State& state, evmc_revision /*rev*/, std::span<Withdrawal> withdrawals)
+void finalize(State& state, zvmc_revision /*rev*/, std::span<Withdrawal> withdrawals)
 {
     std::erase_if(state.get_accounts(), [](const std::pair<const address, Account>& p) noexcept {
         const auto& acc = p.second;
@@ -122,7 +122,7 @@ void finalize(State& state, evmc_revision /*rev*/, std::span<Withdrawal> withdra
 }
 
 std::variant<TransactionReceipt, std::error_code> transition(
-    State& state, const BlockInfo& block, const Transaction& tx, evmc_revision rev, evmc::VM& vm)
+    State& state, const BlockInfo& block, const Transaction& tx, zvmc_revision rev, zvmc::VM& vm)
 {
     auto& sender_acc = state.get(tx.sender);
     const auto validation_result = validate_transaction(sender_acc, block, tx, rev);
@@ -146,7 +146,7 @@ std::variant<TransactionReceipt, std::error_code> transition(
 
     Host host{rev, vm, state, block, tx};
 
-    sender_acc.access_status = EVMC_ACCESS_WARM;  // Tx sender is always warm.
+    sender_acc.access_status = ZVMC_ACCESS_WARM;  // Tx sender is always warm.
     if (tx.to.has_value())
         host.access_account(*tx.to);
     for (const auto& [a, storage_keys] : tx.access_list)
@@ -154,7 +154,7 @@ std::variant<TransactionReceipt, std::error_code> transition(
         host.access_account(a);  // TODO: Return account ref.
         auto& storage = state.get(a).storage;
         for (const auto& key : storage_keys)
-            storage[key].access_status = EVMC_ACCESS_WARM;
+            storage[key].access_status = ZVMC_ACCESS_WARM;
     }
     // EIP-3651: Warm COINBASE.
     // This may create an empty coinbase account. The account cannot be created unconditionally
@@ -206,9 +206,9 @@ std::variant<TransactionReceipt, std::error_code> transition(
 [[nodiscard]] bytes rlp_encode(const TransactionReceipt& receipt)
 {
     const auto prefix = receipt.kind == Transaction::Kind::eip1559 ? bytes{0x02} : bytes{};
-    return prefix + rlp::encode_tuple(receipt.status == EVMC_SUCCESS,
+    return prefix + rlp::encode_tuple(receipt.status == ZVMC_SUCCESS,
                         static_cast<uint64_t>(receipt.gas_used),
                         bytes_view(receipt.logs_bloom_filter), receipt.logs);
 }
 
-}  // namespace evmone::state
+}  // namespace zvmone::state

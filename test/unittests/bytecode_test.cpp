@@ -1,4 +1,4 @@
-// evmone: Fast Ethereum Virtual Machine implementation
+// zvmone: Fast Zond Virtual Machine implementation
 // Copyright 2019 The evmone Authors.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -28,13 +28,13 @@ TEST(bytecode, push_int)
 
 TEST(bytecode, push_bytes32)
 {
-    EXPECT_EQ(push(evmc::bytes32{{0xee, 0x00}}),
+    EXPECT_EQ(push(zvmc::bytes32{{0xee, 0x00}}),
         "7fee00000000000000000000000000000000000000000000000000000000000000");
-    EXPECT_EQ(push(evmc::bytes32{{0x00, 0xee}}),
+    EXPECT_EQ(push(zvmc::bytes32{{0x00, 0xee}}),
         "7eee000000000000000000000000000000000000000000000000000000000000");
-    EXPECT_EQ(push(evmc::bytes32{}), "6000");
-    EXPECT_EQ(push(evmc::bytes32{0xee}), "60ee");
-    EXPECT_EQ(push(evmc::bytes32{0xd0d1}), "61d0d1");
+    EXPECT_EQ(push(zvmc::bytes32{}), "6000");
+    EXPECT_EQ(push(zvmc::bytes32{0xee}), "60ee");
+    EXPECT_EQ(push(zvmc::bytes32{0xd0d1}), "61d0d1");
 }
 
 TEST(bytecode, push_explicit_opcode)

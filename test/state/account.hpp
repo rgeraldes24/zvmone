@@ -1,17 +1,17 @@
-// evmone: Fast Ethereum Virtual Machine implementation
+// zvmone: Fast Zond Virtual Machine implementation
 // Copyright 2021 The evmone Authors.
 // SPDX-License-Identifier: Apache-2.0
 #pragma once
 
-#include <evmc/evmc.hpp>
 #include <intx/intx.hpp>
+#include <zvmc/zvmc.hpp>
 #include <unordered_map>
 
-namespace evmone::state
+namespace zvmone::state
 {
-using evmc::address;
-using evmc::bytes;
-using evmc::bytes32;
+using zvmc::address;
+using zvmc::bytes;
+using zvmc::bytes32;
 
 /// The representation of the account storage value.
 struct StorageValue
@@ -22,7 +22,7 @@ struct StorageValue
     /// The original value.
     bytes32 original = {};
 
-    evmc_access_status access_status = EVMC_ACCESS_COLD;
+    zvmc_access_status access_status = ZVMC_ACCESS_COLD;
 };
 
 /// The state account.
@@ -51,11 +51,11 @@ struct Account
     /// or it is a newly created temporary account.
     bool erasable = false;
 
-    evmc_access_status access_status = EVMC_ACCESS_COLD;
+    zvmc_access_status access_status = ZVMC_ACCESS_COLD;
 
     [[nodiscard]] bool is_empty() const noexcept
     {
         return code.empty() && nonce == 0 && balance == 0;
     }
 };
-}  // namespace evmone::state
+}  // namespace zvmone::state

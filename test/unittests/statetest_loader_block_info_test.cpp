@@ -1,11 +1,11 @@
-// evmone: Fast Ethereum Virtual Machine implementation
+// zvmone: Fast Zond Virtual Machine implementation
 // Copyright 2023 The evmone Authors.
 // SPDX-License-Identifier: Apache-2.0
 
 #include <gtest/gtest.h>
 #include <test/statetest/statetest.hpp>
 
-using namespace evmone;
+using namespace zvmone;
 
 TEST(statetest_loader, block_info)
 {

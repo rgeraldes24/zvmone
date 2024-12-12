@@ -1,4 +1,4 @@
-// evmone: Fast Ethereum Virtual Machine implementation
+// zvmone: Fast Zond Virtual Machine implementation
 // Copyright 2023 The evmone Authors.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -6,12 +6,12 @@
 #include "hash_utils.hpp"
 #include <span>
 
-namespace evmone::state
+namespace zvmone::state
 {
 struct Log;
 struct TransactionReceipt;
 
-/// The 2048-bit hash suitable for keeping an Ethereum bloom filter of transactions logs.
+/// The 2048-bit hash suitable for keeping an Zond bloom filter of transactions logs.
 struct BloomFilter
 {
     //// The 256 bytes of the bloom filter value.
@@ -30,4 +30,4 @@ struct BloomFilter
 [[nodiscard]] BloomFilter compute_bloom_filter(
     std::span<const TransactionReceipt> receipts) noexcept;
 
-}  // namespace evmone::state
+}  // namespace zvmone::state
