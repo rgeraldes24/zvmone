@@ -69,12 +69,12 @@ public:
 struct Withdrawal
 {
     address recipient;
-    uint64_t amount_in_gwei = 0;  ///< The amount is denominated in gwei.
+    uint64_t amount_in_gplanck = 0;  ///< The amount is denominated in gplanck.
 
-    /// Returns withdrawal amount in wei.
+    /// Returns withdrawal amount in planck.
     [[nodiscard]] intx::uint256 get_amount() const noexcept
     {
-        return intx::uint256{amount_in_gwei} * 1'000'000'000;
+        return intx::uint256{amount_in_gplanck} * 1'000'000'000;
     }
 };
 
