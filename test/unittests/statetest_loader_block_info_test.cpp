@@ -10,7 +10,7 @@ using namespace zvmone;
 TEST(statetest_loader, block_info)
 {
     constexpr std::string_view input = R"({
-            "currentCoinbase": "Z1111111111111111111111111111111111111111",
+            "currentCoinbase": "Z111111111111111111111111111111111111111111111111",
             "currentGasLimit": "0x0",
             "currentNumber": "0",
             "currentTimestamp": "0",
@@ -20,7 +20,7 @@ TEST(statetest_loader, block_info)
         })";
 
     const auto bi = test::from_json<state::BlockInfo>(json::json::parse(input));
-    EXPECT_EQ(bi.coinbase, "Z1111111111111111111111111111111111111111"_address);
+    EXPECT_EQ(bi.coinbase, "Z111111111111111111111111111111111111111111111111"_address);
     EXPECT_EQ(bi.prev_randao, 0x00_bytes32);
     EXPECT_EQ(bi.gas_limit, 0x0);
     EXPECT_EQ(bi.base_fee, 7);
@@ -32,7 +32,7 @@ TEST(statetest_loader, block_info)
 TEST(statetest_loader, block_info_hex)
 {
     constexpr std::string_view input = R"({
-        "currentCoinbase": "Z2adc25665018aa1fe0e6bc666dac8fc2697ff9ba",
+        "currentCoinbase": "Z1e8b604cd4aab79b51e69cf94896ed3e5fc663e0f8347bd3",
         "currentGasLimit": "0x16345785D8A0000",
         "currentNumber": "1",
         "currentTimestamp": "0x3E8",
@@ -48,7 +48,7 @@ TEST(statetest_loader, block_info_hex)
     })";
 
     const auto bi = test::from_json<state::BlockInfo>(json::json::parse(input));
-    EXPECT_EQ(bi.coinbase, "Z2adc25665018aa1fe0e6bc666dac8fc2697ff9ba"_address);
+    EXPECT_EQ(bi.coinbase, "Z1e8b604cd4aab79b51e69cf94896ed3e5fc663e0f8347bd3"_address);
     EXPECT_EQ(bi.prev_randao, 0x00_bytes32);
     EXPECT_EQ(bi.gas_limit, 100000000000000000);
     EXPECT_EQ(bi.base_fee, 7);
@@ -59,7 +59,7 @@ TEST(statetest_loader, block_info_hex)
 TEST(statetest_loader, block_info_dec)
 {
     constexpr std::string_view input = R"({
-        "currentCoinbase": "Z2adc25665018aa1fe0e6bc666dac8fc2697ff9ba",
+        "currentCoinbase": "Z1e8b604cd4aab79b51e69cf94896ed3e5fc663e0f8347bd3",
         "currentGasLimit": "100000000000000000",
         "currentNumber": "1",
         "currentTimestamp": "1000",
@@ -75,7 +75,7 @@ TEST(statetest_loader, block_info_dec)
     })";
 
     const auto bi = test::from_json<state::BlockInfo>(json::json::parse(input));
-    EXPECT_EQ(bi.coinbase, "Z2adc25665018aa1fe0e6bc666dac8fc2697ff9ba"_address);
+    EXPECT_EQ(bi.coinbase, "Z1e8b604cd4aab79b51e69cf94896ed3e5fc663e0f8347bd3"_address);
     EXPECT_EQ(bi.prev_randao, 0x00_bytes32);
     EXPECT_EQ(bi.gas_limit, 100000000000000000);
     EXPECT_EQ(bi.base_fee, 7);
@@ -86,7 +86,7 @@ TEST(statetest_loader, block_info_dec)
 TEST(statetest_loader, block_info_0_random)
 {
     constexpr std::string_view input = R"({
-            "currentCoinbase": "Z1111111111111111111111111111111111111111",
+            "currentCoinbase": "Z111111111111111111111111111111111111111111111111",
             "currentGasLimit": "0x0",
             "currentNumber": "0",
             "currentTimestamp": "0",
@@ -96,7 +96,7 @@ TEST(statetest_loader, block_info_0_random)
         })";
 
     const auto bi = test::from_json<state::BlockInfo>(json::json::parse(input));
-    EXPECT_EQ(bi.coinbase, "Z1111111111111111111111111111111111111111"_address);
+    EXPECT_EQ(bi.coinbase, "Z111111111111111111111111111111111111111111111111"_address);
     EXPECT_EQ(bi.prev_randao, 0x00_bytes32);
     EXPECT_EQ(bi.gas_limit, 0x0);
     EXPECT_EQ(bi.base_fee, 7);
@@ -107,7 +107,7 @@ TEST(statetest_loader, block_info_0_random)
 TEST(statetest_loader, block_info_withdrawals)
 {
     constexpr std::string_view input = R"({
-            "currentCoinbase": "Z1111111111111111111111111111111111111111",
+            "currentCoinbase": "Z111111111111111111111111111111111111111111111111",
             "currentGasLimit": "0x0",
             "currentNumber": "0",
             "currentTimestamp": "0",
@@ -117,28 +117,28 @@ TEST(statetest_loader, block_info_withdrawals)
                 {
                     "index": "0x0",
                     "validatorIndex": "0x0",
-                    "address": "Z0000000000000000000000000000000000000100",
+                    "address": "Z000000000000000000000000000000000000000000000100",
                     "amount": "0x800000000"
                 },
                 {
                     "index": "0x1",
                     "validatorIndex": "0x1",
-                    "address": "Z0000000000000000000000000000000000000200",
+                    "address": "Z000000000000000000000000000000000000000000000200",
                     "amount": "0xffffffffffffffff"
                 }
             ]
         })";
 
     const auto bi = test::from_json<state::BlockInfo>(json::json::parse(input));
-    EXPECT_EQ(bi.coinbase, "Z1111111111111111111111111111111111111111"_address);
+    EXPECT_EQ(bi.coinbase, "Z111111111111111111111111111111111111111111111111"_address);
     EXPECT_EQ(bi.prev_randao, 0x00_bytes32);
     EXPECT_EQ(bi.gas_limit, 0x0);
     EXPECT_EQ(bi.base_fee, 7);
     EXPECT_EQ(bi.timestamp, 0);
     EXPECT_EQ(bi.number, 0);
     EXPECT_EQ(bi.withdrawals.size(), 2);
-    EXPECT_EQ(bi.withdrawals[0].recipient, "Z0000000000000000000000000000000000000100"_address);
+    EXPECT_EQ(bi.withdrawals[0].recipient, "Z000000000000000000000000000000000000000000000100"_address);
     EXPECT_EQ(bi.withdrawals[0].get_amount(), intx::uint256{0x800000000} * 1'000'000'000);
-    EXPECT_EQ(bi.withdrawals[1].recipient, "Z0000000000000000000000000000000000000200"_address);
+    EXPECT_EQ(bi.withdrawals[1].recipient, "Z000000000000000000000000000000000000000000000200"_address);
     EXPECT_EQ(bi.withdrawals[1].get_amount(), intx::uint256{0xffffffffffffffff} * 1'000'000'000);
 }

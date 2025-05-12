@@ -79,7 +79,7 @@ TEST_P(zvm, create)
     auto call_output = bytes{0xa, 0xb, 0xc};
     host.call_result.output_data = call_output.data();
     host.call_result.output_size = call_output.size();
-    host.call_result.create_address = "Zcc010203040506070809010203040506070809ce"_address;
+    host.call_result.create_address = "Zcc01020304050607080901020304050607080901020304ce"_address;
     host.call_result.gas_left = 200000;
     execute(300000, sstore(1, create().value(1).input(0, 0x20)));
 
@@ -121,7 +121,7 @@ TEST_P(zvm, create2)
     const bytes call_output{0xa, 0xb, 0xc};
     host.call_result.output_data = call_output.data();
     host.call_result.output_size = call_output.size();
-    host.call_result.create_address = "Zc2010203040506070809010203040506070809ce"_address;
+    host.call_result.create_address = "Zc201020304050607080901020304050607080901020304ce"_address;
     host.call_result.gas_left = 200000;
     execute(300000, sstore(1, create2().value(1).input(0, 0x41).salt(0x5a)));
     EXPECT_GAS_USED(ZVMC_SUCCESS, 117917);
@@ -170,7 +170,7 @@ TEST_P(zvm, create_balance_too_low)
 
 TEST_P(zvm, create_failure)
 {
-    host.call_result.create_address = "Z00000000000000000000000000000000000000ce"_address;
+    host.call_result.create_address = "Z0000000000000000000000000000000000000000000000ce"_address;
     const auto create_address =
         bytes_view{host.call_result.create_address.bytes, sizeof(host.call_result.create_address)};
     rev = ZVMC_SHANGHAI;
@@ -207,7 +207,7 @@ TEST_P(zvm, create_failure)
 
 TEST_P(zvm, call_failing_with_value)
 {
-    host.accounts["Z00000000000000000000000000000000000000aa"_address] = {};
+    host.accounts["Z0000000000000000000000000000000000000000000000aa"_address] = {};
     for (auto op : {OP_CALL})
     {
         const auto code = push(0xff) + push(0) + OP_DUP2 + OP_DUP2 + push(1) + push(0xaa) +
@@ -234,8 +234,8 @@ TEST_P(zvm, call_with_value)
 {
     constexpr auto code = "60ff600060ff6000600160aa618000f150";
 
-    constexpr auto call_sender = "Z5e4d00000000000000000000000000000000d4e5"_address;
-    constexpr auto call_dst = "Z00000000000000000000000000000000000000aa"_address;
+    constexpr auto call_sender = "Z5e4d0000000000000000000000000000000000000000d4e5"_address;
+    constexpr auto call_dst = "Z0000000000000000000000000000000000000000000000aa"_address;
 
     msg.recipient = call_sender;
     host.accounts[msg.recipient].set_balance(1);
@@ -350,14 +350,14 @@ TEST_P(zvm, call_value_zero_to_nonexistent_account)
     EXPECT_EQ(call_msg.depth, 1);
     EXPECT_EQ(call_msg.gas, 6000);
     EXPECT_EQ(call_msg.input_size, 64);
-    EXPECT_EQ(call_msg.recipient, "Z00000000000000000000000000000000000000aa"_address);
+    EXPECT_EQ(call_msg.recipient, "Z0000000000000000000000000000000000000000000000aa"_address);
     EXPECT_EQ(call_msg.value.bytes[31], 0);
 }
 
 TEST_P(zvm, call_new_account_creation_cost)
 {
-    constexpr auto call_dst = "Z00000000000000000000000000000000000000ad"_address;
-    constexpr auto msg_dst = "Z0000000000000000000000000000000000000003"_address;
+    constexpr auto call_dst = "Z0000000000000000000000000000000000000000000000ad"_address;
+    constexpr auto msg_dst = "Z000000000000000000000000000000000000000000000003"_address;
     const auto code =
         4 * push(0) + calldataload(0) + push(call_dst) + push(0) + OP_CALL + ret_top();
     msg.recipient = msg_dst;
@@ -467,7 +467,7 @@ TEST_P(zvm, staticcall_input)
 TEST_P(zvm, call_with_value_low_gas)
 {
     // Create the call destination account.
-    host.accounts["Z0000000000000000000000000000000000000000"_address] = {};
+    host.accounts["Z000000000000000000000000000000000000000000000000"_address] = {};
     for (auto call_op : {OP_CALL})
     {
         auto code = 4 * push(0) + push(1) + 2 * push(0) + call_op + OP_POP;
@@ -481,7 +481,7 @@ TEST_P(zvm, call_with_value_low_gas)
 TEST_P(zvm, call_oog_after_depth_check)
 {
     // Create the call recipient account.
-    host.accounts["Z0000000000000000000000000000000000000000"_address] = {};
+    host.accounts["Z000000000000000000000000000000000000000000000000"_address] = {};
     msg.depth = 1024;
 
     for (auto op : {OP_CALL, OP_CALLCODE})
@@ -503,9 +503,9 @@ TEST_P(zvm, call_oog_after_depth_check)
 
 TEST_P(zvm, call_recipient_and_code_address)
 {
-    constexpr auto origin = "Z9900000000000000000000000000000000000099"_address;
-    constexpr auto executor = "Zee000000000000000000000000000000000000ee"_address;
-    constexpr auto recipient = "Z4400000000000000000000000000000000000044"_address;
+    constexpr auto origin = "Z990000000000000000000000000000000000000000000099"_address;
+    constexpr auto executor = "Zee00000000000000000000000000000000000000000000ee"_address;
+    constexpr auto recipient = "Z440000000000000000000000000000000000000000000044"_address;
 
     msg.sender = origin;
     msg.recipient = executor;
@@ -526,9 +526,9 @@ TEST_P(zvm, call_recipient_and_code_address)
 
 TEST_P(zvm, call_value)
 {
-    constexpr auto origin = "Z9900000000000000000000000000000000000099"_address;
-    constexpr auto executor = "Zee000000000000000000000000000000000000ee"_address;
-    constexpr auto recipient = "Z4400000000000000000000000000000000000044"_address;
+    constexpr auto origin = "Z990000000000000000000000000000000000000000000099"_address;
+    constexpr auto executor = "Zee00000000000000000000000000000000000000000000ee"_address;
+    constexpr auto recipient = "Z440000000000000000000000000000000000000000000044"_address;
 
     constexpr auto passed_value = 3;
     constexpr auto origin_value = 8;

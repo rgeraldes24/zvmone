@@ -10,7 +10,7 @@ using namespace zvmone::test;
 
 TEST_F(state_transition, create2_factory)
 {
-    static constexpr auto create_address = "Zfd8e7707356349027a32d71eabc7cb0cf9d7cbb4"_address;
+    static constexpr auto create_address = "Z47372703f0015b0aa122b01842ae0cdf857c5d7e60d1972a"_address;
 
     const auto factory_code =
         calldatacopy(0, 0, calldatasize()) + create2().input(0, calldatasize());
@@ -26,7 +26,7 @@ TEST_F(state_transition, create2_factory)
 
 TEST_F(state_transition, create_tx)
 {
-    static constexpr auto create_address = "Z3442a1dec1e72f337007125aa67221498cdd759d"_address;
+    static constexpr auto create_address = "Z7c0ff7c9dd01c19896ffc82906bf73375438b962d825114e"_address;
 
     tx.data = mstore8(0, push(0xFE)) + ret(0, 1);
 
