@@ -86,7 +86,7 @@ TEST_P(zvm, create)
     EXPECT_GAS_USED(ZVMC_SUCCESS, 117916);
 
     EXPECT_EQ(account.storage[0x01_bytes32].current,
-        0x000000000000000000000000cc010203040506070809010203040506070809ce_bytes32);
+        0x0000000000000000cc01020304050607080901020304050607080901020304ce_bytes32);
 
     ASSERT_EQ(host.recorded_calls.size(), 1);
     const auto& call_msg = host.recorded_calls.back();
@@ -135,7 +135,7 @@ TEST_P(zvm, create2)
     EXPECT_EQ(call_msg.create2_salt, 0x5a_bytes32);
 
     EXPECT_EQ(account.storage[0x01_bytes32].current,
-        0x000000000000000000000000c2010203040506070809010203040506070809ce_bytes32);
+        0x0000000000000000c201020304050607080901020304050607080901020304ce_bytes32);
 }
 
 TEST_P(zvm, create2_salt_cost)

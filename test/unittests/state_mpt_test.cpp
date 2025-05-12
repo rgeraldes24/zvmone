@@ -21,7 +21,7 @@ TEST(state_mpt, single_account_v1)
 {
     // Expected value computed in go-zond.
     constexpr auto expected =
-        0x084f337237951e425716a04fb0aaa74111eda9d9c61767f2497697d0a201c92e_bytes32;
+        0x06328c6213aba7db22967e76cbaef34a6bc31f8aba4830dd666661d6be2e0f9a_bytes32;
 
     constexpr auto addr = "Z000000000000000000000000000000000000000000000002"_address;
     constexpr uint64_t nonce = 0;

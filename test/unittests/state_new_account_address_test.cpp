@@ -21,22 +21,22 @@ TEST(state_new_account_address, create)
     for (const auto& ic : init_codes)  // Init-code doesn't affect CREATE.
     {
         auto s = senders[0];
-        EXPECT_EQ(addr(s, nonces[0], {}, ic), "Z541e37d13b0b5d00b40a8f2c7c63bb721d9a60ba45ecc81c"_address);
-        EXPECT_EQ(addr(s, nonces[3], {}, ic), "Ze84b1b3915a1dc1e05e47be9bbb9b4c1f7dd393ef749b6cd"_address);
+        EXPECT_EQ(addr(s, nonces[0], {}, ic), "Zf7f2855b719fab117571ba72b464821b20b8a291213b5efc"_address);
+        EXPECT_EQ(addr(s, nonces[3], {}, ic), "Z2519161e0d96846c460b2b523d05aac64c6b736ceb2031c2"_address);
 
         s = senders[1];
-        EXPECT_EQ(addr(s, nonces[0], {}, ic), "Z6f1dd739caaab1da726313b79ebe720b36724636706d6428"_address);
-        EXPECT_EQ(addr(s, nonces[1], {}, ic), "Z4191879a336f7140de1a53154955245c97d7550d195a98d4"_address);
-        EXPECT_EQ(addr(s, nonces[2], {}, ic), "Z245f97a561198bfaff3f070b6f4cd5be3ccd232779a0a7da"_address);
-        EXPECT_EQ(addr(s, nonces[3], {}, ic), "Zcaad888cef88630918fafc308ca1283866638709fd120736"_address);
+        EXPECT_EQ(addr(s, nonces[0], {}, ic), "Z0db73ba3ce32c2940c040c8ed45dc5b644a98407eb8d1c94"_address);
+        EXPECT_EQ(addr(s, nonces[1], {}, ic), "Za5b07a9c31e152a61faac2780b510276f1157d34f593b673"_address);
+        EXPECT_EQ(addr(s, nonces[2], {}, ic), "Z6b8a6ed311fe18c9d803887895f23ff0985dde9656bbbc8e"_address);
+        EXPECT_EQ(addr(s, nonces[3], {}, ic), "Z6b30e290e38c7b9f977a4b4ab18eee76e10fc8fb14b25f44"_address);
 
         s = senders[2];
-        EXPECT_EQ(addr(s, nonces[0], {}, ic), "Zf7c525f004ddf03cb1312b549636eab242ad552089c683cc"_address);
-        EXPECT_EQ(addr(s, nonces[3], {}, ic), "Z76f79604fa72bc3a20f0feb471b17696f1e7c0789cfbaedb"_address);
+        EXPECT_EQ(addr(s, nonces[0], {}, ic), "Z470468759abfb31ffbf2a254d468c29831961d3345e7039f"_address);
+        EXPECT_EQ(addr(s, nonces[3], {}, ic), "Zdf65ec1f119f0dcd531ca80e6a74ab0e0504bfbf9403a1b3"_address);
 
         const auto beacon_deposit_address =
             addr("Z856d2d2c496f09d828ea5a5c013b4315f5c039c381bb6eee"_address, 0, {}, ic);
-        EXPECT_EQ(beacon_deposit_address, "Ze63ca458d1401e0b2961fe49c39a31d30fcdfe9fa0462447"_address);
+        EXPECT_EQ(beacon_deposit_address, "Z493ac2255d8fd261b2ade5113ac327ae923133b2dfe17efa"_address);
     }
 }
 
@@ -45,15 +45,15 @@ TEST(state_new_account_address, create2)
     for (const auto n : nonces)  // Nonce doesn't affect CREATE2.
     {
         EXPECT_EQ(addr(senders[0], n, salts[0], init_codes[0]),
-            "Ze33c0c7f7df4809055c3eba6c09cfe4baf1bd9e0"_address);
+            "Z64e269873ff7334e1c900fc48f4d100dd4a3db230315c50c"_address);
 
         EXPECT_EQ(addr(senders[2], n, salts[0], init_codes[1]),
-            "Z3517dea701ed18fc4a99dc111c5946e1f1541dad"_address);
+            "Zc5c3232ebb5127119e264513f00d7e2410daaf3c90602175"_address);
 
         EXPECT_EQ(addr(senders[1], n, salts[1], init_codes[0]),
-            "Z7be1c1cb3b8298f21c56add66defce03e2d32604"_address);
+            "Z1d0f46d99b9fa2dfd64d3677f1c3833bfb0091b7de50ae24"_address);
 
         EXPECT_EQ(addr(senders[2], n, salts[1], init_codes[1]),
-            "Z8f459e65c8f00a9c0c0493de7b0c61c3c27f7384"_address);
+            "Z7ccb4f0aa7854099b5d0e48e9ae2ee2ca81e5eba036a1dc7"_address);
     }
 }

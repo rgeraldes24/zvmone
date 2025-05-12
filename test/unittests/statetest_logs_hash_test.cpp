@@ -24,5 +24,5 @@ TEST(statetest_logs_hash, example1)
     };
 
     EXPECT_EQ(test::logs_hash(logs),
-        0xb27f856c430c0266d2925d442632401e63685677a4ea009f855dee23e74488aa_bytes32);
+        0xea929281680553105b94aad1448859eea9e917232992c65f97f8928874d1a60a_bytes32);
 }

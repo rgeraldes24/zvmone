@@ -25,7 +25,7 @@ TEST(state_mpt_hash, single_account_v1)
 {
     // Expected value computed in go-zond.
     constexpr auto expected =
-        0x084f337237951e425716a04fb0aaa74111eda9d9c61767f2497697d0a201c92e_bytes32;
+        0x06328c6213aba7db22967e76cbaef34a6bc31f8aba4830dd666661d6be2e0f9a_bytes32;
 
     Account acc;
     acc.balance = 1_u256;
@@ -40,7 +40,7 @@ TEST(state_mpt_hash, two_accounts)
 
     accounts["Z00"_address] = Account{};
     EXPECT_EQ(mpt_hash(accounts),
-        0x0ce23f3c809de377b008a4a3ee94a0834aac8bec1f86e28ffe4fdb5a15b0c785_bytes32);
+        0x773f75e5024e1ba42de862da6b1442977e377d792234855c67b1d345c405e2f3_bytes32);
 
     Account acc2;
     acc2.nonce = 1;
@@ -50,7 +50,7 @@ TEST(state_mpt_hash, two_accounts)
     acc2.storage[0x02_bytes32] = {0xfd_bytes32};
     accounts["Z01"_address] = acc2;
     EXPECT_EQ(mpt_hash(accounts),
-        0xd3e845156fca75de99712281581304fbde104c0fc5a102b09288c07cdde0b666_bytes32);
+        0x7f417fdc714c8b51434e9f3ccaea1d0708702bf669004cbc1d1d819c37b8c089_bytes32);
 }
 
 TEST(state_mpt_hash, deleted_storage)
@@ -61,7 +61,7 @@ TEST(state_mpt_hash, deleted_storage)
     acc.storage[0x03_bytes32] = {};
     const std::unordered_map<address, Account> accounts{{"Z07"_address, acc}};
     EXPECT_EQ(mpt_hash(accounts),
-        0x4e7338c16731491e0fb5d1623f5265c17699c970c816bab71d4d717f6071414d_bytes32);
+        0x943b479272b612a4e0b915329c49beae89db1a1a91de8d69ebabe579a56a733d_bytes32);
 }
 
 TEST(state_mpt_hash, one_transactions)
@@ -106,7 +106,7 @@ TEST(state_mpt_hash, one_transactions)
     tx.chain_id = 11155111;
 
     const auto tx_root = mpt_hash(std::array{tx});
-    EXPECT_EQ(tx_root, 0x9eae8bcf25335b22d7ebff8c179efc8e8dbcaa55aadf331d2efba1cf7cb3112f_bytes32);
+    EXPECT_EQ(tx_root, 0x0db47e5e408ddafa7474ba9393ca407e2712d83009797370b23bc2e129634222_bytes32);
 }
 
 TEST(state_mpt_hash, eip1559_receipt_three_logs_no_logs)
@@ -149,5 +149,5 @@ TEST(state_mpt_hash, eip1559_receipt_three_logs_no_logs)
     receipt1.logs_bloom_filter = compute_bloom_filter(receipt1.logs);
 
     EXPECT_EQ(mpt_hash(std::array{receipt0, receipt1}),
-        0xb2863204ad0580dbec14fd35f8a0ec71fb179765bff7fc279f05349733eb627b_bytes32);
+        0x460e91142fe5468629e249fe71b2db4e3e8e9db3626f0b7e0c9ca3eeeeace22d_bytes32);
 }

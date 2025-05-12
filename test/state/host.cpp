@@ -111,7 +111,7 @@ address compute_new_account_address(const address& sender, uint64_t sender_nonce
     {
         const auto init_code_hash = keccak256(init_code);
         uint8_t buffer[1 + sizeof(sender) + sizeof(*salt) + sizeof(init_code_hash)];
-        static_assert(std::size(buffer) == 85);
+        static_assert(std::size(buffer) == 89);
         buffer[0] = 0xff;
         std::copy_n(sender.bytes, sizeof(sender), &buffer[1]);
         std::copy_n(salt->bytes, sizeof(salt->bytes), &buffer[1 + sizeof(sender)]);
@@ -120,7 +120,7 @@ address compute_new_account_address(const address& sender, uint64_t sender_nonce
         addr_base_hash = keccak256({buffer, std::size(buffer)});
     }
     zvmc_address new_addr{};
-    std::copy_n(&addr_base_hash.bytes[12], sizeof(new_addr), new_addr.bytes);
+    std::copy_n(&addr_base_hash.bytes[4], sizeof(new_addr), new_addr.bytes);
     return new_addr;
 }
 
