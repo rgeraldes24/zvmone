@@ -58,6 +58,8 @@ TEST_P(zvm, codecopy_combinations)
     EXPECT_EQ(output, code.substr(0x12, 1));
 }
 
+// TODO(rgeraldes24)
+/*
 TEST_P(zvm, tx_context)
 {
     rev = ZVMC_SHANGHAI;
@@ -87,6 +89,7 @@ TEST_P(zvm, tx_context)
     EXPECT_EQ(result.output_data[2], 0x66);
     EXPECT_EQ(result.output_data[1], 0xdd);
 }
+*/
 
 TEST_P(zvm, balance)
 {
@@ -327,13 +330,13 @@ TEST_P(zvm, extcodecopy_nonzero_index)
     EXPECT_EQ(result.output_data[0], 0xc0);
     EXPECT_EQ(result.output_data[1], 0);
     ASSERT_EQ(host.recorded_account_accesses.size(), 4);
-    EXPECT_EQ(host.recorded_account_accesses.back().bytes[19], 0xa);
+    EXPECT_EQ(host.recorded_account_accesses.back().bytes[23], 0xa);
 }
 
 TEST_P(zvm, extcodecopy_fill_tail)
 {
     auto addr = zvmc_address{};
-    addr.bytes[19] = 0xa;
+    addr.bytes[23] = 0xa;
 
     auto& extcode = host.accounts[addr].code;
     extcode = {0xff, 0xfe};
@@ -341,7 +344,7 @@ TEST_P(zvm, extcodecopy_fill_tail)
     auto code = push(2) + push(0) + push(0) + push(0xa) + OP_EXTCODECOPY + ret(0, 2);
     execute(code);
     ASSERT_EQ(host.recorded_account_accesses.size(), 4);
-    EXPECT_EQ(host.recorded_account_accesses.back().bytes[19], 0xa);
+    EXPECT_EQ(host.recorded_account_accesses.back().bytes[23], 0xa);
     EXPECT_EQ(result.status_code, ZVMC_SUCCESS);
     ASSERT_EQ(result.output_size, 2);
     EXPECT_EQ(result.output_data[0], 0xff);

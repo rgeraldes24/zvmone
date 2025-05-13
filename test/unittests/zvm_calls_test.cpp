@@ -182,7 +182,7 @@ TEST_P(zvm, create_failure)
         execute(code);
         EXPECT_EQ(result.status_code, ZVMC_SUCCESS);
         ASSERT_EQ(result.output_size, 32);
-        EXPECT_EQ((bytes_view{result.output_data + 12, 20}), create_address);
+        EXPECT_EQ((bytes_view{result.output_data + 8, 24}), create_address);
         ASSERT_EQ(host.recorded_calls.size(), 1);
         EXPECT_EQ(host.recorded_calls.back().kind, op == OP_CREATE ? ZVMC_CREATE : ZVMC_CREATE2);
         host.recorded_calls.clear();
@@ -257,7 +257,7 @@ TEST_P(zvm, call_with_value)
 TEST_P(zvm, call_with_value_depth_limit)
 {
     auto call_dst = zvmc_address{};
-    call_dst.bytes[19] = 0xaa;
+    call_dst.bytes[23] = 0xaa;
     host.accounts[call_dst] = {};
 
     msg.depth = 1024;
@@ -400,7 +400,7 @@ TEST_P(zvm, call_then_oog)
 {
     // Performs a CALL then OOG in the same code block.
     auto call_dst = zvmc_address{};
-    call_dst.bytes[19] = 0xaa;
+    call_dst.bytes[23] = 0xaa;
     host.accounts[call_dst] = {};
     host.call_result.status_code = ZVMC_FAILURE;
     host.call_result.gas_left = 0;
@@ -419,7 +419,7 @@ TEST_P(zvm, delegatecall_then_oog)
 {
     // Performs a CALL then OOG in the same code block.
     auto call_dst = zvmc_address{};
-    call_dst.bytes[19] = 0xaa;
+    call_dst.bytes[23] = 0xaa;
     host.accounts[call_dst] = {};
     host.call_result.status_code = ZVMC_FAILURE;
     host.call_result.gas_left = 0;
@@ -438,7 +438,7 @@ TEST_P(zvm, staticcall_then_oog)
 {
     // Performs a STATICCALL then OOG in the same code block.
     auto call_dst = zvmc_address{};
-    call_dst.bytes[19] = 0xaa;
+    call_dst.bytes[23] = 0xaa;
     host.accounts[call_dst] = {};
     host.call_result.status_code = ZVMC_FAILURE;
     host.call_result.gas_left = 0;

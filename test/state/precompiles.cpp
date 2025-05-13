@@ -165,7 +165,7 @@ std::optional<zvmc::Result> call_precompile(zvmc_revision rev, const zvmc_messag
     if (zvmc::is_zero(msg.code_address) || msg.code_address >= address_boundary)
         return {};
 
-    const auto id = msg.code_address.bytes[19];
+    const auto id = msg.code_address.bytes[23];
 
     assert(id > 0);
     assert(msg.gas >= 0);

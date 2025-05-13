@@ -137,7 +137,7 @@ inline zvmc::address generate_interesting_address(uint8_t b) noexcept
 
     auto z = zvmc::address{};
 
-    const size_t size = s == 3 ? 20 : 1 << s;
+    const size_t size = s == 3 ? 24 : 1 << s;
 
     if (fill)
     {
