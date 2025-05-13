@@ -58,8 +58,6 @@ TEST_P(zvm, codecopy_combinations)
     EXPECT_EQ(output, code.substr(0x12, 1));
 }
 
-// TODO(rgeraldes24)
-/*
 TEST_P(zvm, tx_context)
 {
     rev = ZVMC_SHANGHAI;
@@ -89,7 +87,6 @@ TEST_P(zvm, tx_context)
     EXPECT_EQ(result.output_data[2], 0x66);
     EXPECT_EQ(result.output_data[1], 0xdd);
 }
-*/
 
 TEST_P(zvm, balance)
 {

@@ -429,12 +429,9 @@ TEST_P(zvm, calldataload_outofrange)
     EXPECT_EQ(std::count(result.output_data, result.output_data + result.output_size, 0), 32);
 }
 
-// TODO(rgeraldes24)
-/*
 TEST_P(zvm, address)
 {
     msg.recipient.bytes[0] = 0xcc;
-    // TODO(rgeraldes24)
     const auto code = mstore(0, OP_ADDRESS) + ret(6, 10);
     execute(17, code);
     EXPECT_GAS_USED(ZVMC_SUCCESS, 17);
@@ -452,7 +449,6 @@ TEST_P(zvm, caller_callvalue)
     ASSERT_EQ(result.output_size, 10);
     EXPECT_EQ(bytes_view(&result.output_data[0], 10), "0000ddee000000000000"_hex);
 }
-*/
 
 TEST_P(zvm, undefined)
 {
